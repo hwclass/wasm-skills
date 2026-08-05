@@ -9,7 +9,8 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Include tests or evals when behavior, script output, installation
+semantics, activation descriptions, recipes, or validation guidance changes.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -21,10 +22,15 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Skill source**: `skills/wasm-build/`
+- **Skill activation**: `skills/wasm-build/SKILL.md`
+- **Human docs**: `README.md`, `CONTRIBUTING.md`, `skills/wasm-build/README.md`
+- **References**: `skills/wasm-build/references/`
+- **Scripts**: `skills/wasm-build/scripts/`
+- **Templates/assets**: `skills/wasm-build/assets/`
+- **Examples/fixtures**: `skills/wasm-build/examples/`
+- **Behavioral checks**: `skills/wasm-build/evals/`
+- **Installer**: `install.sh`
 
 <!--
   ============================================================================
@@ -45,13 +51,13 @@ description: "Task list template for feature implementation"
   ============================================================================
 -->
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Shared Skill Structure)
 
-**Purpose**: Project initialization and basic structure
+**Purpose**: Establish or update the intentionally small repository structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Create or update directories specified in the implementation plan
+- [ ] T002 Create or update package metadata and local commands in package.json
+- [ ] T003 [P] Configure formatting or linting for Markdown and Node.js scripts
 
 ---
 
@@ -63,12 +69,12 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Define or update `wasm-build` activation frontmatter in skills/wasm-build/SKILL.md
+- [ ] T005 [P] Add or update build-plan template in skills/wasm-build/assets/build-plan.template.md
+- [ ] T006 [P] Add safe project inspection behavior in skills/wasm-build/scripts/inspect-wasm-project.mjs
+- [ ] T007 [P] Add safe artifact inspection behavior in skills/wasm-build/scripts/inspect-wasm-artifact.mjs
+- [ ] T008 Add install behavior in install.sh with project/global destinations and `--force`
+- [ ] T009 Document graceful missing-tool behavior shared by scripts and recipes
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -84,17 +90,17 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Eval case for [agent trigger/build scenario] in skills/wasm-build/evals/[file].json
+- [ ] T011 [P] [US1] Script or install test for [behavior] in [test path]
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T012 [P] [US1] Update agent workflow in skills/wasm-build/SKILL.md
+- [ ] T013 [P] [US1] Update human-facing docs in skills/wasm-build/README.md
+- [ ] T014 [US1] Add target-selection or recipe guidance in skills/wasm-build/references/[file].md
+- [ ] T015 [US1] Add validation or diagnosis guidance in skills/wasm-build/references/[file].md
+- [ ] T016 [US1] Add safe failure handling for user story 1
+- [ ] T017 [US1] Document successful commands, target assumptions, and known limitations
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -108,15 +114,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T018 [P] [US2] Eval case for [agent trigger/build scenario] in skills/wasm-build/evals/[file].json
+- [ ] T019 [P] [US2] Script or install test for [behavior] in [test path]
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T020 [P] [US2] Update skill instructions in skills/wasm-build/SKILL.md
+- [ ] T021 [US2] Update relevant reference or recipe file in skills/wasm-build/references/[file].md
+- [ ] T022 [US2] Update safe helper script behavior in skills/wasm-build/scripts/[file].mjs
+- [ ] T023 [US2] Integrate with User Story 1 guidance without duplicating tutorial content
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -130,14 +136,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T024 [P] [US3] Eval case for [agent trigger/build scenario] in skills/wasm-build/evals/[file].json
+- [ ] T025 [P] [US3] Script or install test for [behavior] in [test path]
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T026 [P] [US3] Update reference guidance in skills/wasm-build/references/[file].md
+- [ ] T027 [US3] Update examples or fixtures in skills/wasm-build/examples/[example]/
+- [ ] T028 [US3] Update docs with validation commands and runtime assumptions
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -151,11 +157,11 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Documentation updates in README.md, CONTRIBUTING.md, or skills/wasm-build/README.md
 - [ ] TXXX Code cleanup and refactoring
-- [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
-- [ ] TXXX Security hardening
+- [ ] TXXX Remove duplicated tutorial detail from SKILL.md and move it to references/
+- [ ] TXXX [P] Additional evals for target selection, diagnosis, validation, or install behavior
+- [ ] TXXX Installation safety hardening
 - [ ] TXXX Run quickstart.md validation
 
 ---
@@ -180,8 +186,9 @@ Examples of foundational tasks (adjust based on your project):
 ### Within Each User Story
 
 - Tests (if included) MUST be written and FAIL before implementation
-- Models before services
-- Services before endpoints
+- Skill activation before detailed references
+- Build-plan behavior before mutation-oriented instructions
+- Safe script behavior before examples that depend on scripts
 - Core implementation before integration
 - Story complete before moving to next priority
 

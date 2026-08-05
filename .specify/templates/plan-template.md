@@ -28,7 +28,7 @@
 
 **Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Project Type**: [e.g., agent skill, install script, validation helper, docs/reference update or NEEDS CLARIFICATION]
 
 **Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
@@ -40,7 +40,27 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Agent-skill scope**: Feature improves a repeatable WebAssembly coding-agent
+  workflow and does not turn the repo into runtime infrastructure, a package
+  manager, marketplace, MCP registry, or broad speculative skill catalog.
+- **Repository boundary**: Changes fit the intentional initial shape centered on
+  `skills/wasm-build/`; any new top-level structure or new skill is justified in
+  Complexity Tracking.
+- **Progressive disclosure**: `SKILL.md` remains compact and agent-facing;
+  detailed guidance, scripts, assets, examples, and evals live in their expected
+  subdirectories.
+- **Plan before mutation**: Agent workflow requires a build plan before changing
+  project files, including target, runtime, validation, risks, changed files, and
+  fallback path.
+- **Detect/diagnose/validate**: Plan covers repository inspection, failure-class
+  diagnosis, artifact validation, and graceful degradation when external tools
+  are unavailable.
+- **Installation safety**: Install behavior avoids root permissions, destructive
+  commands, overwrites without `--force`, automatic heavy toolchain installation,
+  and ambiguous destination reporting.
+- **Documentation and evals**: Successful build paths, activation behavior,
+  install commands, validation commands, and changed recipes/scripts have docs
+  and tests or evals appropriate to risk.
 
 ## Project Structure
 
@@ -65,39 +85,21 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+README.md
+LICENSE
+CONTRIBUTING.md
+CHANGELOG.md
+install.sh
+package.json
+skills/
+└── wasm-build/
+    ├── SKILL.md
+    ├── README.md
+    ├── references/
+    ├── scripts/
+    ├── assets/
+    ├── examples/
+    └── evals/
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

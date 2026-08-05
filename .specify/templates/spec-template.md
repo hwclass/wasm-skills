@@ -72,11 +72,13 @@
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
+  Fill them out with edge cases relevant to WebAssembly agent-skill workflows.
 -->
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+- What happens when the expected language toolchain is not installed?
+- What happens when repository evidence points to multiple possible Wasm targets?
+- How does the skill avoid unsafe mutation or random build-flag changes?
+- How does validation degrade when optional tools are unavailable?
 
 ## Requirements *(mandatory)*
 
@@ -87,21 +89,29 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST [specific capability for a bounded WebAssembly agent-skill workflow]
+- **FR-002**: System MUST [repository evidence the agent inspects before choosing a path]
+- **FR-003**: System MUST [build-plan, target-selection, diagnosis, validation, or documentation behavior]
+- **FR-004**: System MUST [installation or file-layout behavior, if changed]
+- **FR-005**: System MUST [safe failure/degradation behavior for missing tools or invalid inputs]
 
 *Example of marking unclear requirements:*
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **FR-006**: System MUST support [NEEDS CLARIFICATION: target environment not specified - browser, WASI Preview 1, WASI Preview 2 / Component Model, plugin runtime, edge runtime?]
+- **FR-007**: System MUST validate artifacts with [NEEDS CLARIFICATION: validation tool or runtime not specified]
+
+### Constitution Alignment *(mandatory)*
+
+- **Skill Scope**: [Which skill or repository boundary changes, and why this improves repeatable WebAssembly agent workflows]
+- **Non-Goals Preserved**: [Runtime infrastructure, package manager, marketplace, MCP registry, automatic heavy toolchain installation, and speculative skill expansion remain out of scope unless explicitly justified]
+- **Install Impact**: [Whether `./install.sh wasm-build --project`, `./install.sh wasm-build --global`, or manual fallback behavior changes]
+- **Validation Impact**: [Artifact validation, script output, docs, examples, or evals required by this feature]
 
 ### Key Entities *(include if feature involves data)*
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **Skill**: [Installable directory with `SKILL.md`, optional references/scripts/assets/examples/evals, and activation metadata]
+- **Build Plan**: [Agent-facing plan containing detected toolchain, target artifact, runtime, validation, risks, files likely to change, and fallback path]
+- **Validation Result**: [Outcome from static artifact checks, runtime smoke tests, or graceful missing-tool reporting]
 
 ## Success Criteria *(mandatory)*
 
@@ -112,10 +122,10 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-001**: [Agents produce a complete build plan before file mutation in tested trigger scenarios]
+- **SC-002**: [Agents choose the intended Wasm target/runtime for representative repositories]
+- **SC-003**: [Validation or diagnosis reports identify actionable next steps without installing heavy toolchains automatically]
+- **SC-004**: [Install or documentation workflow succeeds on macOS and Linux paths covered by the feature]
 
 ## Assumptions
 
@@ -125,7 +135,7 @@
   chosen when the feature description did not specify certain details.
 -->
 
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- Coding agents are the primary user of `SKILL.md`; humans use README and contribution docs.
+- The first-class installable unit is `skills/wasm-build/`.
+- Missing external Wasm tools are reported clearly; they are not installed automatically.
+- New infrastructure or new skills require an explicit spec and constitution check.
