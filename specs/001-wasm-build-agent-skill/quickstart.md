@@ -60,6 +60,21 @@ test -f skills/wasm-build/scripts/inspect-wasm-project.mjs
 test -f skills/wasm-build/scripts/inspect-wasm-artifact.mjs
 ```
 
+## Run Local Validation
+
+The repository exposes documented local validation commands for:
+
+- structure validation
+- Markdown/content checks
+- fixture/schema checks
+- installer tests
+- script tests
+- evaluation checks
+
+The implementation may choose the exact test runner, but each command must be
+documented in the repository README or package metadata before the first slice is
+complete.
+
 ## Example Invocation
 
 Ask a compatible coding agent:
@@ -74,29 +89,44 @@ Expected agent behavior:
 2. Inspects repository evidence before deciding.
 3. Produces a build plan using the required fields.
 4. Recommends build, validation, test, and runtime commands.
-5. Avoids file mutation until the build plan is accepted or clearly implied by
-   the user task.
+5. Avoids file mutation, dependency installation, project build commands, and
+   generated-command execution unless the user explicitly requested execution in
+   the current instruction or approves the presented build plan.
 
 ## Expected Build Plan Shape
 
-```markdown
-# WebAssembly Build Plan
-
-Repository:
-Request:
-Detected language/toolchain:
-Repository evidence:
-Intended execution environment:
-Target artifact type:
-Recommended build path:
-Build command:
-Validation command:
-Test command:
-Runtime command:
-Files likely to change:
-Known risks:
-Fallback path if first build fails:
-Documentation updates:
+```json
+{
+  "schemaVersion": "1.0",
+  "projectRoot": null,
+  "detectedFacts": [
+    { "kind": "manifest", "path": "Cargo.toml" },
+    { "kind": "source", "path": "src/main.rs" }
+  ],
+  "intendedEnvironment": "WASI CLI",
+  "runtime": "wasi-preview1",
+  "target": "wasm32-wasip1",
+  "artifactType": "wasi-command",
+  "language": "rust",
+  "toolchain": "cargo",
+  "buildCommand": "cargo build --target wasm32-wasip1",
+  "validationCommands": [
+    "wasm-tools validate target/wasm32-wasip1/debug/app.wasm",
+    "wasmtime run target/wasm32-wasip1/debug/app.wasm"
+  ],
+  "smokeTestCommand": "wasmtime run target/wasm32-wasip1/debug/app.wasm",
+  "filesExpectedToChange": [],
+  "risks": [
+    { "id": "missing-target", "summary": "Rust WASI target may not be installed" }
+  ],
+  "fallbackPath": "Confirm installed Rust targets and choose browser or component target if WASI CLI is not intended.",
+  "documentationUpdates": [
+    "README build command",
+    "README runtime assumptions",
+    "README validation command"
+  ],
+  "approvalRequired": true
+}
 ```
 
 ## Inspect A Repository
@@ -111,11 +141,12 @@ runtime hints, likely targets, and warnings.
 ## Inspect An Artifact
 
 ```bash
-node skills/wasm-build/scripts/inspect-wasm-artifact.mjs path/to/module.wasm
+node skills/wasm-build/scripts/inspect-wasm-artifact.mjs fixtures/app.wasm
 ```
 
 Expected output: JSON containing basic artifact facts and validation results.
-Missing optional tools are reported as skipped validation steps.
+Missing optional tools are reported as skipped validation steps. Inspection mode
+does not execute the artifact.
 
 ## Manual Installation Fallback
 
@@ -132,11 +163,34 @@ used.
 Project-local:
 
 ```bash
-rm -rf .agents/skills/wasm-build
+./install.sh wasm-build --uninstall --project
+```
+
+Expected output when installed:
+
+```text
+Removed wasm-build from /absolute/path/to/wasm-skills/.agents/skills/wasm-build
+```
+
+Expected output when missing:
+
+```text
+wasm-build is not installed at /absolute/path/to/wasm-skills/.agents/skills/wasm-build
 ```
 
 Global:
 
 ```bash
-rm -rf ~/.agents/skills/wasm-build
+./install.sh wasm-build --uninstall --global
 ```
+
+Expected output when installed:
+
+```text
+Removed wasm-build from /home/user/.agents/skills/wasm-build
+```
+
+Uninstall removes only the exact `wasm-build` destination directory. It never
+removes `.agents`, `.agents/skills`, `~/.agents`, or `~/.agents/skills`. v0.1
+does not detect locally modified installed files; users who need to preserve
+local edits should copy those edits before uninstalling.

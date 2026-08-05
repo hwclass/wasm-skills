@@ -10,18 +10,22 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Install wasm-build locally (Priority: P1)
+### User Story 1 - Install and uninstall wasm-build (Priority: P1)
 
-A repository maintainer installs `wasm-build` into the current project so coding
-agents can discover it from `.agents/skills/wasm-build`.
+A repository maintainer installs or uninstalls `wasm-build` for the current
+project or current user so coding agents discover only the intended installed
+skill copy.
 
 **Why this priority**: The first vertical slice is not usable until the skill can
 be installed predictably without requiring users to understand skill directory
 placement.
 
-**Independent Test**: From a clean checkout, run `./install.sh wasm-build --project`
-and verify that `.agents/skills/wasm-build/SKILL.md` exists, no root permissions
-were requested, and the command prints the installed path and next step.
+**Independent Test**: From a clean checkout, run project/global install and
+uninstall commands. Verify that installs create only the expected skill
+destination, uninstalls remove only the exact managed skill directory, missing
+uninstalls are successful no-ops, no parent directories are removed, no root
+permissions are requested, and `--force` controls overwrite behavior for
+existing install destinations.
 
 **Acceptance Scenarios**:
 
@@ -34,6 +38,17 @@ were requested, and the command prints the installed path and next step.
 3. **Given** a destination already exists, **When** the user runs install without
    `--force`, **Then** the command refuses to overwrite, prints the destination,
    and exits `3`.
+4. **Given** `.agents/skills/wasm-build` exists, **When** the user runs
+   `./install.sh wasm-build --uninstall --project`, **Then** only
+   `.agents/skills/wasm-build` is removed and `.agents/skills` remains.
+5. **Given** `~/.agents/skills/wasm-build` exists, **When** the user runs
+   `./install.sh wasm-build --uninstall --global`, **Then** only
+   `~/.agents/skills/wasm-build` is removed and `~/.agents/skills` remains.
+6. **Given** the selected install destination does not exist, **When** the user
+   runs the matching uninstall command, **Then** the command exits `0` and prints
+   that `wasm-build` is not installed at that destination.
+7. **Given** the destination already exists, **When** the user runs install with
+   `--force`, **Then** only the existing `wasm-build` destination is replaced.
 
 ---
 
@@ -134,9 +149,17 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
   recipe contribution rules, and evaluation execution.
 - **FR-004**: `references/target-selection.md` MUST define runtime decision
   entries for Browser, Node, WASI Preview 1, WASI Preview 2, Component Model,
-  Wasmtime, WasmEdge, Spin, Extism, and Unknown runtime.
+  Wasmtime, WasmEdge, Spin, Extism, and Unknown runtime. Each entry MUST include
+  `whenToChoose`, `whenNotToChoose`, `supportedOrCommonLanguages`,
+  `recommendedToolchains`, `artifactExpectation`, `validationStrategy`,
+  `runtimeAssumptions`, `knownPitfalls`, and `negativeCase`, and the document
+  MUST explain that these categories can overlap rather than being mutually
+  exclusive.
 - **FR-005**: `references/language-recipes.md` MUST define recipes for Rust,
-  TinyGo, C, C++, JavaScript, Python, Zig, and AssemblyScript.
+  TinyGo, C, C++, JavaScript, Python, Zig, and AssemblyScript. Rust, TinyGo, C,
+  C++, and JavaScript are Tier 1 complete recipes. Python, Zig, and
+  AssemblyScript are Tier 2 constrained guidance and MUST NOT claim parity with
+  Tier 1 in v0.1.
 - **FR-006**: `references/failure-diagnosis.md` MUST classify failure classes
   with symptoms, likely causes, inspection steps, recommended next action, and
   unsafe action to avoid.
@@ -148,10 +171,12 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
 - **FR-009**: `scripts/inspect-wasm-project.mjs` MUST scan the current
   repository read-only and report languages, known build files, likely Wasm
   targets, existing artifacts, WIT files, likely toolchains, Wasm-related package
-  scripts, Makefile hints, Dockerfiles, and CI hints.
+  scripts, Makefile hints, Dockerfiles, and CI hints using the closed
+  InspectionResult contract.
 - **FR-010**: `scripts/inspect-wasm-artifact.mjs` MUST inspect a provided `.wasm`
   path, report basic file facts, optionally use available external validation
-  tools, and degrade gracefully when tools are missing.
+  tools from the defined allowlist, and degrade gracefully when tools are
+  missing.
 - **FR-011**: `install.sh wasm-build --project` MUST install to
   `./.agents/skills/wasm-build`.
 - **FR-012**: `install.sh wasm-build --global` MUST install to
@@ -165,7 +190,12 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
   external toolchains.
 - **FR-015**: Evaluation fixtures MUST include trigger queries that activate the
   skill, non-trigger queries that do not activate it, false-positive cases, and
-  false-negative prevention cases.
+  false-negative prevention cases. Non-trigger coverage MUST include native
+  non-Wasm compilation, general AI or LLM questions, non-Wasm package-manager
+  usage, container or GPU model serving, generic CI configuration, runtime
+  hosting without a Wasm build decision, ordinary JavaScript/browser debugging,
+  generic Rust build failures with no Wasm target, and WebAssembly conceptual
+  questions that do not require build planning.
 - **FR-016**: Example specs MUST cover Rust browser, Rust WASI, Rust Component
   Model, TinyGo, C with wasi-sdk, and JavaScript component workflows, each with
   repository shape, build command, validation command, and expected artifact.
@@ -176,6 +206,22 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
   replace language toolchains, become a build system, install heavy toolchains,
   add runtime adapters, expose MCP servers, provide OpenAI tool wrappers, create
   a hosted registry, create a marketplace, create a GUI, or implement CI.
+- **FR-019**: The skill MAY inspect files and produce a build plan without
+  approval, but MUST NOT modify project files, install dependencies, invoke
+  project build commands, or execute generated commands unless the user
+  explicitly requested execution in the current instruction or the agent
+  presented the build plan and then received explicit approval. Asking for help,
+  diagnosis, guidance, or a plan does not authorize mutation or execution.
+- **FR-020**: `install.sh` MUST support `./install.sh wasm-build --uninstall --project`
+  and `./install.sh wasm-build --uninstall --global`, remove only the exact
+  managed `wasm-build` skill directory, never remove parent `.agents` or
+  `.agents/skills` directories, treat missing destinations as successful
+  no-ops with a clear message, and document whether modified installed files are
+  removed or require `--force`.
+- **FR-021**: The repository MUST expose documented local validation commands for
+  structure validation, Markdown/content checks, fixture/schema checks, installer
+  tests, script tests, and evaluation checks. The exact internal tooling remains
+  an implementation choice.
 
 ### Constitution Alignment *(mandatory)*
 
@@ -185,8 +231,8 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
   marketplaces, MCP registries, automatic heavy toolchain installation, GUI
   surfaces, CI implementation, and speculative skills remain out of scope.
 - **Install Impact**: Adds `./install.sh wasm-build --project`,
-  `./install.sh wasm-build --global`, `--force`, clear exit codes, and manual
-  fallback documentation.
+  `./install.sh wasm-build --global`, project/global uninstall, `--force`, clear
+  exit codes, and manual fallback documentation.
 - **Validation Impact**: Adds read-only inspection scripts, artifact validation
   guidance, example workflows, and activation evals.
 
@@ -231,6 +277,22 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
 - **SC-007**: The first implementation includes complete examples for all six
   required workflows and each example names repository shape, build command,
   validation command, and expected artifact.
+- **SC-008**: In 100% of negative approval evals, help-only, diagnosis-only, and
+  plan-only requests do not authorize project-file mutation, dependency
+  installation, project build commands, or generated-command execution.
+- **SC-009**: Project and global uninstall commands are idempotent and preserve
+  parent skill directories in 100% of installer tests.
+- **SC-010**: Canonical BuildPlan validation rejects missing fields, fields out
+  of order, invalid enum values, timestamps, random identifiers, unsorted
+  unordered arrays, and environment-specific absolute paths not explicitly
+  requested.
+- **SC-011**: Repository inspection returns byte-equivalent JSON on repeated runs
+  over unchanged fixtures, including fixtures for symlink escape, ignored
+  directories, malformed manifests, unreadable files, and traversal truncation.
+- **SC-012**: Artifact inspection tests verify no-shell invocation, allowlisted
+  commands only, timeout handling, output caps, missing-tool skips, invalid
+  artifact reporting, shell-metacharacter paths, and no artifact execution in
+  inspection mode.
 
 ## Assumptions
 
@@ -242,3 +304,5 @@ skill prompts for README, CI, toolchain, runtime, and limitations documentation.
   condition, not a reason to mutate or install dependencies.
 - Manual installation remains documented as a fallback, while the install script
   is the recommended path.
+- v0.1 uninstall does not attempt modified-install detection; it removes only the
+  exact managed skill directory and warns users before documenting the command.

@@ -23,8 +23,9 @@ detected at runtime.
 
 **Storage**: Files in repository and installed skill directories only.
 
-**Testing**: Shell install scenarios, Node.js script fixture checks, Markdown
-content checks, JSON schema/shape checks for eval fixtures.
+**Testing**: Local validation commands for structure, Markdown/content,
+fixture/schema, installer scenarios, script fixtures, and evaluation checks. The
+specific internal test framework remains an implementation choice.
 
 **Target Platform**: macOS and Linux first; compatible coding agents discovering
 `.agents/skills/wasm-build` or `~/.agents/skills/wasm-build`.
@@ -115,8 +116,11 @@ skills/
 ```
 
 **Structure Decision**: Use the constitution-defined skill package and a compact
-root tool/documentation set. No hosted registry, MCP server, runtime adapter, or
-new skill is included.
+root tool/documentation set. The examples expand the constitution's minimal
+example names into `rust-browser`, `rust-wasi`, and `rust-component` so Rust
+target differences are explicit, while retaining `tinygo-minimal`,
+`c-wasi-minimal`, and `js-component-minimal`. No hosted registry, MCP server,
+runtime adapter, or new skill is included.
 
 ## Complexity Tracking
 

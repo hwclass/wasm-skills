@@ -1,5 +1,9 @@
 # Examples: wasm-build Agent Skill
 
+These examples document recommended commands for build plans. The skill does not
+execute these commands automatically; execution requires an explicit current user
+instruction or explicit approval after the build plan is presented.
+
 ## Rust Browser
 
 **Repository shape**:
