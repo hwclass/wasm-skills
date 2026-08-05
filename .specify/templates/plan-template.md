@@ -4,63 +4,87 @@
 
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit-plan` command. See
+`.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+[Extract from feature spec: which Agent Skill or repository boundary changes,
+why it improves repeatable WebAssembly coding-agent workflows, and the technical
+approach from research.]
 
 ## Technical Context
 
 <!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
+  ACTION REQUIRED: Replace the content in this section with concrete technical
+  details for this wasm-skills feature. Do not introduce generic app assumptions.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Language/Version**: [e.g., POSIX shell installer, Node.js ESM read-only helper,
+Markdown/JSON skill content or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Primary Dependencies**: [e.g., standard macOS/Linux shell utilities, Node.js,
+optional Wasm validators detected at runtime or NEEDS CLARIFICATION]
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Storage**: [repository files and installed skill directories only, or N/A]
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Testing**: [local validation commands, eval fixtures, installer scenarios,
+script fixtures, contract/schema checks or NEEDS CLARIFICATION]
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Target Platform**: [macOS/Linux, compatible coding agents discovering
+`.agents/skills/<skill>` or `~/.agents/skills/<skill>` or NEEDS CLARIFICATION]
 
-**Project Type**: [e.g., agent skill, install script, validation helper, docs/reference update or NEEDS CLARIFICATION]
+**Project Type**: [agent skill, installer, validation helper, docs/reference
+update, eval fixture update, distribution-readiness update or NEEDS CLARIFICATION]
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Performance Goals**: [deterministic inspection/runtime bounds, fixture size
+targets, output caps, or NEEDS CLARIFICATION]
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+**Constraints**: [read-only inspection, no hidden mutation, no automatic
+toolchain installation, no arbitrary command execution, explicit approval before
+build execution, deterministic output, safe install/uninstall or NEEDS
+CLARIFICATION]
 
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: [bounded Agent Skill surface: skill directories, references,
+scripts, assets, examples, evals, installer, docs, release checklist or NEEDS
+CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- **Agent-skill scope**: Feature improves a repeatable WebAssembly coding-agent
-  workflow and does not turn the repo into runtime infrastructure, a package
-  manager, marketplace, MCP registry, or broad speculative skill catalog.
-- **Repository boundary**: Changes fit the intentional initial shape centered on
-  `skills/wasm-build/`; any new top-level structure or new skill is justified in
-  Complexity Tracking.
-- **Progressive disclosure**: `SKILL.md` remains compact and agent-facing;
-  detailed guidance, scripts, assets, examples, and evals live in their expected
-  subdirectories.
-- **Plan before mutation**: Agent workflow requires a build plan before changing
-  project files, including target, runtime, validation, risks, changed files, and
-  fallback path.
-- **Detect/diagnose/validate**: Plan covers repository inspection, failure-class
-  diagnosis, artifact validation, and graceful degradation when external tools
-  are unavailable.
-- **Installation safety**: Install behavior avoids root permissions, destructive
-  commands, overwrites without `--force`, automatic heavy toolchain installation,
-  and ambiguous destination reporting.
-- **Documentation and evals**: Successful build paths, activation behavior,
-  install commands, validation commands, and changed recipes/scripts have docs
-  and tests or evals appropriate to risk.
+- **Agent Skills, Not Runtime Infrastructure**: Feature improves a repeatable,
+  technically bounded WebAssembly coding-agent workflow. It does not turn the
+  repository into a Wasm runtime, package manager, hosted marketplace, MCP
+  registry, model-serving system, cloud platform, generic AI framework, or new
+  build system.
+- **Progressive Disclosure Skill Format**: Every installable skill remains a
+  directory with required `SKILL.md`. `SKILL.md` stays compact and agent-facing;
+  detailed guidance lives in `references/`, helpers in `scripts/`, templates in
+  `assets/`, examples in `examples/`, and behavioral checks in `evals/`.
+- **Plan Before Mutation**: Agent workflow requires a BuildPlan before project
+  file changes, dependency installation, project build commands, or generated
+  command execution. Plans include detected language/toolchain, intended
+  environment, artifact type, build path, validation/test commands, risks, files
+  likely to change, and fallback path.
+- **Detect, Diagnose, Validate**: Plan covers repository evidence inspection
+  before target selection, deterministic inspection output, failure-class
+  diagnosis before command changes, artifact validation, missing-tool
+  degradation, no project script execution during inspection, and no arbitrary
+  command execution.
+- **Simple Installation, Explicit Toolchains**: Install behavior preserves the
+  distinction between source root and caller project root, supports project and
+  global destinations, refuses overwrite without `--force`, reports exact
+  destinations, avoids root permissions, avoids automatic toolchain
+  installation, and uninstalls only exact managed skill directories.
+- **Repository Boundary and Scope Restraint**: Changes fit the intentionally
+  small repository shape or justify any expansion in Complexity Tracking. New
+  skills, hosted services, registries, GUIs, runtime adapters, package managers,
+  and broad speculative catalogs are out of scope unless separately specified.
+- **Documentation, Acceptance, and Task Traceability**: Successful build paths,
+  activation behavior, install/uninstall behavior, validation commands, changed
+  recipes/scripts, negative trigger cases, and edge cases have acceptance
+  criteria plus concrete tasks, tests, or evals appropriate to risk.
 
 ## Project Structure
 
@@ -68,20 +92,24 @@
 
 ```text
 specs/[###-feature]/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+├── spec.md
+├── plan.md
+├── research.md
+├── data-model.md
+├── contracts.md
+├── acceptance.md
+├── examples.md
+├── quickstart.md
+├── tasks.md
+└── checklists/
+    └── requirements.md
 ```
 
 ### Source Code (repository root)
+
 <!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  ACTION REQUIRED: Replace or trim this tree to match the feature. Keep paths
+  concrete. If new top-level directories are added, justify them below.
 -->
 
 ```text
@@ -91,25 +119,38 @@ CONTRIBUTING.md
 CHANGELOG.md
 install.sh
 package.json
+docs/
+fixtures/
 skills/
 └── wasm-build/
     ├── SKILL.md
     ├── README.md
     ├── references/
+    │   ├── target-selection.md
+    │   ├── language-recipes.md
+    │   ├── failure-diagnosis.md
+    │   └── runtime-validation.md
     ├── scripts/
+    │   ├── inspect-wasm-project.mjs
+    │   └── inspect-wasm-artifact.mjs
     ├── assets/
+    │   ├── build-plan.template.md
+    │   └── build-plan.examples.md
     ├── examples/
     └── evals/
+        ├── trigger-queries.json
+        └── build-cases.json
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: [Document the selected concrete structure and why it
+preserves progressive disclosure, source-root versus project-local install
+semantics, and repository shape restraint.]
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Fill ONLY if Constitution Check has violations or repository-shape expansion
+> that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Violation or Expansion | Why Needed | Simpler Alternative Rejected Because |
+|------------------------|------------|-------------------------------------|
+| [e.g., new top-level docs/] | [release checklist or user-facing docs need] | [why existing README/skill docs were insufficient] |

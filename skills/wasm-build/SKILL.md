@@ -1,6 +1,6 @@
 ---
 name: wasm-build
-description: Use when compiling to WebAssembly, choosing Wasm targets, WASI Preview 1, WASI Preview 2 / Component Model, browser Wasm, WIT, wasm-bindgen, Emscripten, wasi-sdk, Wasmtime, WasmEdge, Extism, Spin, jco, or diagnosing WebAssembly build failures.
+description: Use when compiling to WebAssembly, choosing Wasm targets, target-selection, validation, WASI Preview 1, WASI Preview 2 / Component Model, browser Wasm, WIT, wasm-bindgen, Emscripten, wasi-sdk, Wasmtime, WasmEdge, Extism, Spin, jco, or diagnosing WebAssembly build failures.
 ---
 
 # wasm-build

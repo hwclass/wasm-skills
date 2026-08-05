@@ -11,17 +11,26 @@ wasi-sdk, Emscripten, Wasmtime, WasmEdge, jco, or other heavy toolchains.
 
 ## Install
 
-Project-local install:
+Primary ecosystem installation:
+
+```bash
+npx skills add YOUR_GITHUB_OWNER/wasm-skills --skill wasm-build
+```
+
+`YOUR_GITHUB_OWNER/wasm-skills` is release configuration. Replace it with the
+real public GitHub owner and repository before publication. This is the public
+Agent Skills ecosystem path for installing the canonical
+`skills/wasm-build/SKILL.md` package.
+
+Direct clone/development installation:
 
 ```bash
 ./install.sh wasm-build --project
-```
-
-Global install:
-
-```bash
 ./install.sh wasm-build --global
 ```
+
+The `install.sh` commands install the same canonical skill contents from a local
+checkout. Use them for development, local testing, or direct-clone workflows.
 
 Use `--force` to replace an existing installed copy:
 

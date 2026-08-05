@@ -15,6 +15,7 @@ const requiredPaths = [
   'CONTRIBUTING.md',
   'CHANGELOG.md',
   'LICENSE',
+  'docs/release-checklist.md',
   'fixtures/app.wasm',
   'install.sh',
   'package.json',
@@ -63,6 +64,19 @@ function parseJsonBlocks(markdown, file) {
   return blocks;
 }
 
+function parseSkillFrontmatter(markdown) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n/);
+  assert.ok(match, 'SKILL.md missing YAML frontmatter');
+  const entries = {};
+  for (const line of match[1].split('\n')) {
+    if (!line.trim()) continue;
+    const field = line.match(/^([a-z][a-z0-9-]*):\s*(.*)$/);
+    assert.ok(field, `Unsupported frontmatter line: ${line}`);
+    entries[field[1]] = field[2].trim().replace(/^"(.*)"$/, '$1');
+  }
+  return { entries, body: markdown.slice(match[0].length) };
+}
+
 function validWasmBytes() {
   return Buffer.from([0, 0x61, 0x73, 0x6d, 1, 0, 0, 0]);
 }
@@ -99,6 +113,10 @@ async function validateStructure() {
   for (const rel of requiredPaths) {
     assert.ok(fs.existsSync(path.join(root, rel)), `missing ${rel}`);
   }
+  const discoveryPath = 'skills/wasm-build/SKILL.md';
+  assert.equal(discoveryPath.split('/').length, 3);
+  assert.ok(fs.existsSync(path.join(root, discoveryPath)), 'canonical Skills CLI discovery path missing');
+  assert.ok(fs.readdirSync(path.join(root, 'skills')).includes('wasm-build'), 'skill missing from top-level skills directory');
   for (const dir of ['rust-browser', 'rust-wasi', 'rust-component', 'tinygo-minimal', 'c-wasi-minimal', 'js-component-minimal']) {
     assert.ok(fs.existsSync(path.join(root, 'skills/wasm-build/examples', dir, 'README.md')), `missing example ${dir}`);
   }
@@ -106,6 +124,27 @@ async function validateStructure() {
 
 async function validateContent() {
   const skill = read('skills/wasm-build/SKILL.md');
+  const { entries, body } = parseSkillFrontmatter(skill);
+  assert.deepEqual(Object.keys(entries).sort(), ['description', 'name']);
+  assert.equal(entries.name, 'wasm-build');
+  assert.match(entries.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  assert.ok(entries.name.length <= 64);
+  assert.ok(entries.description.length > 0);
+  assert.ok(entries.description.length <= 1024);
+  for (const term of ['WebAssembly', 'Wasm targets', 'validation', 'diagnosing']) {
+    assertIncludes(entries.description, term, 'SKILL.md frontmatter description');
+  }
+  assert.ok(Buffer.byteLength(body, 'utf8') < 10000, 'SKILL.md body exceeds approved size limit');
+  for (const rel of [
+    'skills/wasm-build/references/target-selection.md',
+    'skills/wasm-build/references/language-recipes.md',
+    'skills/wasm-build/references/failure-diagnosis.md',
+    'skills/wasm-build/references/runtime-validation.md',
+    'skills/wasm-build/scripts/inspect-wasm-project.mjs',
+    'skills/wasm-build/scripts/inspect-wasm-artifact.mjs'
+  ]) {
+    assert.ok(fs.existsSync(path.join(root, rel)), `SKILL.md referenced file missing: ${rel}`);
+  }
   for (const term of ['WebAssembly', 'WASI Preview 1', 'WASI Preview 2 / Component Model', 'browser Wasm', 'WIT', 'wasm-bindgen', 'Emscripten', 'wasi-sdk', 'Wasmtime', 'WasmEdge', 'Extism', 'Spin', 'jco', 'build failure diagnosis']) {
     assertIncludes(skill, term, 'SKILL.md');
   }
@@ -128,6 +167,42 @@ async function validateContent() {
   const validation = read('skills/wasm-build/references/runtime-validation.md');
   for (const runtime of ['Browser', 'Node.js', 'Wasmtime', 'WasmEdge', 'Spin', 'Extism', 'jco / Transpiled Components', 'Generic Artifact Validation']) {
     assertIncludes(validation, runtime, 'runtime-validation.md');
+  }
+
+  const readme = read('README.md');
+  assertIncludes(readme, 'npx skills add YOUR_GITHUB_OWNER/wasm-skills --skill wasm-build', 'README.md');
+  assertIncludes(readme, './install.sh wasm-build --project', 'README.md');
+  assertIncludes(readme, './install.sh wasm-build --global', 'README.md');
+  assertIncludes(readme, 'same canonical skill contents', 'README.md');
+  assertIncludes(readme, 'real public GitHub owner and repository', 'README.md');
+
+  const releaseChecklist = read('docs/release-checklist.md');
+  const releaseChecklistLower = releaseChecklist.toLowerCase();
+  for (const item of ['repository is public', 'frontmatter validates', 'npx skills add your_github_owner/wasm-skills --skill wasm-build', 'dashboard indexing or search visibility may occur separately']) {
+    assertIncludes(releaseChecklistLower, item, 'release-checklist.md');
+  }
+  const releaseChecklistPlain = releaseChecklistLower.replace(/`/g, '').replace(/\s+/g, ' ');
+  assertIncludes(releaseChecklistLower, '.agents/skills/speckit-*', 'release-checklist.md');
+  assert.ok(/\.agents\/skills\/speckit-\*.*(remain|available|preserv)/s.test(releaseChecklistLower), 'release-checklist.md must preserve required Spec Kit skill tooling');
+  assertIncludes(releaseChecklistLower, 'generated product-skill installation', 'release-checklist.md');
+  assertIncludes(releaseChecklistLower, '.agents/skills/wasm-build/', 'release-checklist.md');
+  assert.ok(/(no|must not)[\s\S]*\.agents\/skills\/wasm-build\/[\s\S]*(committed|commit)/.test(releaseChecklistLower), 'release-checklist.md must prohibit committing generated wasm-build installs');
+  assertIncludes(releaseChecklistLower, '.gitignore', 'release-checklist.md');
+  assert.ok(/\.gitignore[\s\S]*\.agents\/skills\/wasm-build\//.test(releaseChecklistLower), 'release-checklist.md must require a narrow wasm-build ignore rule');
+  assert.ok(!releaseChecklistPlain.includes('no generated .agents/ directory is committed'), 'release-checklist.md must not require ignoring the complete .agents directory');
+  assert.ok(!releaseChecklistPlain.includes('no generated .agents directory is committed'), 'release-checklist.md must not require ignoring the complete .agents directory');
+
+  const gitignore = read('.gitignore').split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
+  assert.ok(gitignore.includes('.agents/skills/wasm-build/'), '.gitignore must narrowly ignore .agents/skills/wasm-build/');
+  assert.ok(!gitignore.includes('.agents/'), '.gitignore must not ignore the complete .agents/ directory');
+  assert.ok(!fs.existsSync(path.join(root, '.agents/skills/wasm-build')), 'generated .agents/skills/wasm-build/ must not be present');
+  const agentSkillsDir = path.join(root, '.agents/skills');
+  const specKitSkills = fs.existsSync(agentSkillsDir)
+    ? fs.readdirSync(agentSkillsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory() && entry.name.startsWith('speckit-'))
+    : [];
+  assert.ok(specKitSkills.length > 0, 'required .agents/skills/speckit-* directories must remain present');
+  for (const entry of specKitSkills) {
+    assert.ok(fs.existsSync(path.join(agentSkillsDir, entry.name, 'SKILL.md')), `${entry.name} missing SKILL.md`);
   }
 }
 
@@ -190,36 +265,41 @@ async function validateFixtures() {
 async function validateInstall() {
   await withTempDir(async (tmp) => {
     const repo = path.join(tmp, 'repo');
+    const project = path.join(tmp, 'external-project');
     await copyRecursive(root, repo);
     const env = { ...process.env, HOME: path.join(tmp, 'home') };
-    const runInstall = (args) => spawnSync('./install.sh', args, { cwd: repo, env, encoding: 'utf8' });
+    await fsp.mkdir(project);
+    const projectPhysicalPath = fs.realpathSync(project);
+    const runInstall = (args, cwd = repo) => spawnSync(path.join(repo, 'install.sh'), args, { cwd, env, encoding: 'utf8' });
 
-    let result = runInstall(['wasm-build', '--project']);
+    let result = runInstall(['wasm-build', '--project'], project);
     assert.equal(result.status, 0, result.stderr);
-    assert.ok(fs.existsSync(path.join(repo, '.agents/skills/wasm-build/SKILL.md')));
+    assert.ok(fs.existsSync(path.join(project, '.agents/skills/wasm-build/SKILL.md')));
+    assert.ok(!fs.existsSync(path.join(repo, '.agents/skills/wasm-build/SKILL.md')));
+    assert.match(result.stdout, new RegExp(`Installed wasm-build to ${projectPhysicalPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/\\.agents/skills/wasm-build`));
 
-    result = runInstall(['wasm-build', '--project']);
+    result = runInstall(['wasm-build', '--project'], project);
     assert.equal(result.status, 3, result.stderr);
 
-    result = runInstall(['wasm-build', '--project', '--force']);
+    result = runInstall(['wasm-build', '--project', '--force'], project);
     assert.equal(result.status, 0, result.stderr);
 
-    result = runInstall(['rust-build', '--project']);
+    result = runInstall(['rust-build', '--project'], project);
     assert.equal(result.status, 2);
 
-    result = runInstall(['wasm-build']);
+    result = runInstall(['wasm-build'], project);
     assert.equal(result.status, 2);
 
     result = runInstall(['wasm-build', '--global']);
     assert.equal(result.status, 0, result.stderr);
     assert.ok(fs.existsSync(path.join(env.HOME, '.agents/skills/wasm-build/SKILL.md')));
 
-    result = runInstall(['wasm-build', '--uninstall', '--project']);
+    result = runInstall(['wasm-build', '--uninstall', '--project'], project);
     assert.equal(result.status, 0, result.stderr);
-    assert.ok(fs.existsSync(path.join(repo, '.agents/skills')));
-    assert.ok(!fs.existsSync(path.join(repo, '.agents/skills/wasm-build')));
+    assert.ok(fs.existsSync(path.join(project, '.agents/skills')));
+    assert.ok(!fs.existsSync(path.join(project, '.agents/skills/wasm-build')));
 
-    result = runInstall(['wasm-build', '--uninstall', '--project']);
+    result = runInstall(['wasm-build', '--uninstall', '--project'], project);
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /not installed/);
 

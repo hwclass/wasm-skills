@@ -48,12 +48,13 @@ if [ -z "$scope" ]; then
   exit 2
 fi
 
-repo_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
-source_dir="$repo_root/skills/wasm-build"
+script_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+project_root=$(pwd -P)
+source_dir="$script_root/skills/wasm-build"
 
 case "$scope" in
   --project)
-    dest_parent="$repo_root/.agents/skills"
+    dest_parent="$project_root/.agents/skills"
     ;;
   --global)
     dest_parent="${HOME:?HOME is required}/.agents/skills"
