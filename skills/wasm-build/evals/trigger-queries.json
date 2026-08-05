@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "shouldActivate": [
+    { "id": "rust-browser", "query": "Build this Rust crate for browser Wasm" },
+    { "id": "rust-wasi", "query": "Make a build plan for this Rust CLI as WASI Preview 1" },
+    { "id": "rust-component", "query": "Compile this Rust project as a WebAssembly component using WIT" },
+    { "id": "tinygo-wasi", "query": "Help me build this TinyGo project to Wasm" },
+    { "id": "c-wasi", "query": "Diagnose my wasi-sdk C build failure" },
+    { "id": "cpp-emscripten", "query": "Choose between Emscripten and WASI for this C++ Wasm target" },
+    { "id": "jco-component", "query": "Package this JavaScript module as a WebAssembly component with jco" },
+    { "id": "artifact-validation", "query": "Validate this generated .wasm artifact" },
+    { "id": "wasi-preview2", "query": "Decide whether this project should use WASI Preview 2" },
+    { "id": "spin-runtime", "query": "Inspect this Spin app and plan the Wasm build" },
+    { "id": "extism-plugin", "query": "Build-plan this Extism plugin for Wasm" },
+    { "id": "wasm-failure", "query": "Classify this WebAssembly build failure before changing flags" }
+  ],
+  "shouldNotActivate": [
+    { "id": "native-rust", "category": "native non-Wasm compilation", "query": "Build this Rust CLI for Linux" },
+    { "id": "general-llm", "category": "general AI or LLM questions", "query": "Explain how transformers work" },
+    { "id": "package-manager", "category": "package-manager usage unrelated to Wasm", "query": "Update npm dependencies for this React app" },
+    { "id": "gpu-serving", "category": "container or GPU model serving", "query": "Serve this model on a GPU container" },
+    { "id": "generic-ci", "category": "generic CI configuration", "query": "Add a lint job to GitHub Actions" },
+    { "id": "runtime-hosting", "category": "runtime hosting without a Wasm build decision", "query": "Deploy my existing Wasmtime service" },
+    { "id": "browser-debug", "category": "ordinary JavaScript/browser debugging", "query": "Debug this click handler in Chrome" },
+    { "id": "rust-nonwasm-failure", "category": "generic Rust build failures with no Wasm target", "query": "Fix this native cargo test failure" },
+    { "id": "conceptual-wasm", "category": "WebAssembly conceptual questions that do not require build planning", "query": "What is WebAssembly?" }
+  ],
+  "falsePositiveCases": [
+    { "id": "wasm-history", "query": "Write a blog intro about WebAssembly history" },
+    { "id": "docker-wasm-word", "query": "Name a Docker image tag containing wasm" },
+    { "id": "npm-wasm-package", "query": "Upgrade a package named wasm-utils without building Wasm" },
+    { "id": "ci-string", "query": "Search CI logs for the word wasm only" }
+  ],
+  "falseNegativePrevention": [
+    { "id": "wrong-wasi-preview", "query": "My WASI Preview 2 component fails in Wasmtime" },
+    { "id": "missing-import", "query": "This Wasm module has a missing import" },
+    { "id": "browser-vs-node", "query": "Should this wasm-bindgen output target browser or Node?" },
+    { "id": "artifact-only", "query": "Inspect this .wasm artifact before I run it" }
+  ]
+}

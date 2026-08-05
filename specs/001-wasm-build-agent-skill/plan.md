@@ -89,6 +89,8 @@ CONTRIBUTING.md
 CHANGELOG.md
 install.sh
 package.json
+fixtures/
+└── app.wasm
 skills/
 └── wasm-build/
     ├── SKILL.md
@@ -102,7 +104,8 @@ skills/
     │   ├── inspect-wasm-project.mjs
     │   └── inspect-wasm-artifact.mjs
     ├── assets/
-    │   └── build-plan.template.md
+    │   ├── build-plan.template.md
+    │   └── build-plan.examples.md
     ├── examples/
     │   ├── rust-browser/
     │   ├── rust-wasi/

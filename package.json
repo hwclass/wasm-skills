@@ -1,0 +1,19 @@
+{
+  "name": "wasm-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Installable AI Agent Skills for WebAssembly workflows.",
+  "type": "module",
+  "scripts": {
+    "validate:structure": "node skills/wasm-build/evals/validate.mjs structure",
+    "validate:content": "node skills/wasm-build/evals/validate.mjs content",
+    "validate:fixtures": "node skills/wasm-build/evals/validate.mjs fixtures",
+    "test:install": "node skills/wasm-build/evals/validate.mjs install",
+    "test:scripts": "node skills/wasm-build/evals/validate.mjs scripts",
+    "test:evals": "node skills/wasm-build/evals/validate.mjs evals",
+    "validate": "node skills/wasm-build/evals/validate.mjs all"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

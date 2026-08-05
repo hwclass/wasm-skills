@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "cases": [
+    {
+      "id": "rust-browser",
+      "repositoryShape": ["Cargo.toml", "index.html", "src/lib.rs"],
+      "request": "Compile to browser Wasm",
+      "expectedRuntime": "browser",
+      "expectedArtifactType": "js-bound-module",
+      "expectedValidation": ["wasm-tools validate"]
+    },
+    {
+      "id": "rust-wasi-preview1",
+      "repositoryShape": ["Cargo.toml", "src/main.rs"],
+      "request": "Compile as a WASI CLI module",
+      "expectedRuntime": "wasi-preview1",
+      "expectedArtifactType": "wasi-command",
+      "expectedValidation": ["wasm-tools validate", "wasmtime run"]
+    },
+    {
+      "id": "rust-component",
+      "repositoryShape": ["Cargo.toml", "src/lib.rs", "wit/world.wit"],
+      "request": "Compile as a component",
+      "expectedRuntime": "component-model",
+      "expectedArtifactType": "component",
+      "expectedValidation": ["wasm-tools validate", "jco wit"]
+    },
+    {
+      "id": "tinygo-wasi",
+      "repositoryShape": ["go.mod", "main.go"],
+      "request": "Build with TinyGo for WASI",
+      "expectedRuntime": "wasi-preview1",
+      "expectedArtifactType": "wasi-command",
+      "expectedValidation": ["wasm-tools validate"]
+    },
+    {
+      "id": "c-wasi",
+      "repositoryShape": ["Makefile", "src/main.c"],
+      "request": "Build C with wasi-sdk",
+      "expectedRuntime": "wasi-preview1",
+      "expectedArtifactType": "wasi-command",
+      "expectedValidation": ["wasm-tools validate"]
+    },
+    {
+      "id": "js-component",
+      "repositoryShape": ["component.json", "package.json", "src/index.js", "wit/world.wit"],
+      "request": "Build JavaScript component",
+      "expectedRuntime": "component-model",
+      "expectedArtifactType": "component",
+      "expectedValidation": ["jco wit", "wasm-tools validate"]
+    }
+  ]
+}
