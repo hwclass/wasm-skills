@@ -14,13 +14,11 @@ wasi-sdk, Emscripten, Wasmtime, WasmEdge, jco, or other heavy toolchains.
 Primary ecosystem installation:
 
 ```bash
-npx skills add YOUR_GITHUB_OWNER/wasm-skills --skill wasm-build
+npx skills add hwclass/wasm-skills --skill wasm-build
 ```
 
-`YOUR_GITHUB_OWNER/wasm-skills` is release configuration. Replace it with the
-real public GitHub owner and repository before publication. This is the public
-Agent Skills ecosystem path for installing the canonical
-`skills/wasm-build/SKILL.md` package.
+`hwclass/wasm-skills` is the public Agent Skills ecosystem path for installing
+the canonical `skills/wasm-build/SKILL.md` package.
 
 Direct clone/development installation:
 

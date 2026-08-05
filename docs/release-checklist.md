@@ -12,9 +12,8 @@ installation.
 - [ ] `npm run validate` passes.
 - [ ] `git diff --check` passes.
 - [ ] Direct external-directory install passes.
-- [ ] `npx skills add YOUR_GITHUB_OWNER/wasm-skills --skill wasm-build` succeeds
-  from a fresh temporary project after replacing `YOUR_GITHUB_OWNER/wasm-skills`
-  with the real public GitHub owner and repository.
+- [ ] `npx skills add hwclass/wasm-skills --skill wasm-build` succeeds from a
+  fresh temporary project.
 - [ ] Installed skill is discoverable by at least one supported coding agent.
 - [ ] README installation command uses the real GitHub owner and repository.
 - [ ] Required Spec Kit tooling under `.agents/skills/speckit-*` remains

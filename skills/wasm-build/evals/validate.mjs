@@ -170,15 +170,15 @@ async function validateContent() {
   }
 
   const readme = read('README.md');
-  assertIncludes(readme, 'npx skills add YOUR_GITHUB_OWNER/wasm-skills --skill wasm-build', 'README.md');
+  assertIncludes(readme, 'npx skills add hwclass/wasm-skills --skill wasm-build', 'README.md');
   assertIncludes(readme, './install.sh wasm-build --project', 'README.md');
   assertIncludes(readme, './install.sh wasm-build --global', 'README.md');
   assertIncludes(readme, 'same canonical skill contents', 'README.md');
-  assertIncludes(readme, 'real public GitHub owner and repository', 'README.md');
+  assertIncludes(readme, 'public Agent Skills ecosystem path', 'README.md');
 
   const releaseChecklist = read('docs/release-checklist.md');
   const releaseChecklistLower = releaseChecklist.toLowerCase();
-  for (const item of ['repository is public', 'frontmatter validates', 'npx skills add your_github_owner/wasm-skills --skill wasm-build', 'dashboard indexing or search visibility may occur separately']) {
+  for (const item of ['repository is public', 'frontmatter validates', 'npx skills add hwclass/wasm-skills --skill wasm-build', 'dashboard indexing or search visibility may occur separately']) {
     assertIncludes(releaseChecklistLower, item, 'release-checklist.md');
   }
   const releaseChecklistPlain = releaseChecklistLower.replace(/`/g, '').replace(/\s+/g, ' ');
