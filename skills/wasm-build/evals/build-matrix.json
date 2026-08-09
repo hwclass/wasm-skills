@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Repository-owned wasm-build matrix fixture; not a universal Agent Skills schema.",
+  "cases": [
+    {
+      "id": "rust-browser",
+      "language": "rust",
+      "environment": "browser",
+      "artifactType": "js-bound-module",
+      "expectedToolchainFamily": ["wasm-bindgen", "wasm-pack"],
+      "expectedValidationFamily": ["static-wasm-validation", "browser-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "rust-wasi-preview1",
+      "language": "rust",
+      "environment": "wasi-preview1",
+      "artifactType": "wasi-command",
+      "expectedToolchainFamily": ["cargo", "rust-wasi-target"],
+      "expectedValidationFamily": ["static-wasm-validation", "wasi-runtime-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "rust-component",
+      "language": "rust",
+      "environment": "component-model",
+      "artifactType": "component",
+      "expectedToolchainFamily": ["cargo-component", "wasm-tools"],
+      "expectedValidationFamily": ["component-validation", "wit-inspection"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "tinygo-wasi",
+      "language": "tinygo",
+      "environment": "wasi-preview1",
+      "artifactType": "wasi-command",
+      "expectedToolchainFamily": ["tinygo"],
+      "expectedValidationFamily": ["static-wasm-validation", "wasi-runtime-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "c-browser",
+      "language": "c",
+      "environment": "browser",
+      "artifactType": "js-bound-module",
+      "expectedToolchainFamily": ["emscripten"],
+      "expectedValidationFamily": ["static-wasm-validation", "browser-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "cpp-wasi",
+      "language": "cpp",
+      "environment": "wasi-preview1",
+      "artifactType": "wasi-command",
+      "expectedToolchainFamily": ["wasi-sdk"],
+      "expectedValidationFamily": ["static-wasm-validation", "wasi-runtime-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "javascript-component",
+      "language": "javascript",
+      "environment": "component-model",
+      "artifactType": "component",
+      "expectedToolchainFamily": ["jco"],
+      "expectedValidationFamily": ["component-validation", "wit-inspection"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "unknown-rust-environment",
+      "language": "rust",
+      "environment": "unknown",
+      "artifactType": "unknown",
+      "expectedToolchainFamily": [],
+      "expectedValidationFamily": ["static-inspection-only"],
+      "unsupportedOrAmbiguous": ["requires-target-clarification"]
+    },
+    {
+      "id": "extism-plugin",
+      "language": "rust",
+      "environment": "extism",
+      "artifactType": "core-module",
+      "expectedToolchainFamily": ["extism-pdk", "language-toolchain"],
+      "expectedValidationFamily": ["static-wasm-validation", "host-smoke-test"],
+      "unsupportedOrAmbiguous": []
+    },
+    {
+      "id": "spin-component",
+      "language": "javascript",
+      "environment": "spin",
+      "artifactType": "component",
+      "expectedToolchainFamily": ["spin-sdk", "component-tooling"],
+      "expectedValidationFamily": ["spin-config-inspection", "static-wasm-validation"],
+      "unsupportedOrAmbiguous": []
+    }
+  ]
+}

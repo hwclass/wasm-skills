@@ -43,9 +43,10 @@
 - **AC-017**: For a request that only asks for help, guidance, diagnosis, or a
   build plan, the skill does not authorize project-file mutation, dependency
   installation, project build commands, or generated-command execution.
-- **AC-018**: For a request that explicitly says to execute the approved build
-  plan, the skill may proceed only after the plan exists and the instruction is
-  in the current user request or follows explicit approval.
+- **AC-018**: For a request that explicitly says to build, compile, test, or
+  execute the planned Wasm workflow, the skill may proceed only after the plan
+  exists and the instruction is in the current user request or follows explicit
+  approval.
 - **AC-019**: For a request to diagnose a build failure, the skill may inspect
   files and produce diagnosis, but must not run package scripts or build commands
   without explicit approval.
