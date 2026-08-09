@@ -36,5 +36,141 @@
     { "id": "missing-import", "query": "This Wasm module has a missing import" },
     { "id": "browser-vs-node", "query": "Should this wasm-bindgen output target browser or Node?" },
     { "id": "artifact-only", "query": "Inspect this .wasm artifact before I run it" }
+  ],
+  "intentCases": [
+    {
+      "id": "plan-rust-browser",
+      "mode": "PLAN",
+      "language": "rust",
+      "environment": "browser",
+      "query": "How do I build this Rust crate for browser Wasm?",
+      "must": ["inspect", "produce-build-plan", "no-mutation", "no-build-execution", "no-tool-install"]
+    },
+    {
+      "id": "plan-c-wasi-vs-emscripten",
+      "mode": "PLAN",
+      "language": "c",
+      "environment": "unknown",
+      "query": "Inspect this C project and help me choose WASI or Emscripten.",
+      "must": ["inspect", "select-target", "produce-build-plan", "report-ambiguity", "no-mutation", "no-build-execution"]
+    },
+    {
+      "id": "plan-javascript-component",
+      "mode": "PLAN",
+      "language": "javascript",
+      "environment": "component-model",
+      "query": "Plan how to package this JavaScript module as a WebAssembly component.",
+      "must": ["inspect", "select-target", "produce-build-plan", "no-mutation", "no-build-execution"]
+    },
+    {
+      "id": "build-rust-browser",
+      "mode": "BUILD",
+      "language": "rust",
+      "environment": "browser",
+      "query": "Build this Rust project for browser Wasm and validate the output.",
+      "must": ["inspect", "produce-build-plan", "build-execution-authorized", "no-redundant-build-approval", "validate-after-success"]
+    },
+    {
+      "id": "build-tinygo-wasi",
+      "mode": "BUILD",
+      "language": "tinygo",
+      "environment": "wasi-preview1",
+      "query": "Compile this TinyGo service to WASI and run the validation commands.",
+      "must": ["inspect", "produce-build-plan", "build-execution-authorized", "no-redundant-build-approval", "diagnose-build-failure"]
+    },
+    {
+      "id": "build-c-wasi-sdk",
+      "mode": "BUILD",
+      "language": "c",
+      "environment": "wasi-preview1",
+      "query": "Build this C project with wasi-sdk and validate the Wasm output.",
+      "must": ["inspect", "produce-build-plan", "build-execution-authorized", "no-redundant-build-approval", "validate-after-success"]
+    },
+    {
+      "id": "build-missing-language-target",
+      "mode": "BUILD_MISSING_PREREQUISITE",
+      "language": "rust",
+      "environment": "browser",
+      "query": "Build this Rust browser Wasm project completely, but the required language target is missing.",
+      "must": ["detect-missing-prerequisite", "no-automatic-environment-install", "request-environment-approval", "resume-after-approval"]
+    },
+    {
+      "id": "build-missing-sdk",
+      "mode": "BUILD_MISSING_PREREQUISITE",
+      "language": "cpp",
+      "environment": "browser",
+      "query": "Build this C++ browser Wasm project, but Emscripten is missing.",
+      "must": ["detect-missing-prerequisite", "no-automatic-environment-install", "request-environment-approval", "resume-after-approval"]
+    },
+    {
+      "id": "repair-emscripten-browser",
+      "mode": "REPAIR",
+      "language": "cpp",
+      "environment": "browser",
+      "query": "Fix this Emscripten browser Wasm configuration so it builds reproducibly.",
+      "must": ["inspect", "produce-build-plan", "project-local-mutation-authorized", "environment-approval-required", "validate-when-possible"]
+    },
+    {
+      "id": "repair-wasi-import-mismatch",
+      "mode": "REPAIR",
+      "language": "rust",
+      "environment": "wasi-preview1",
+      "query": "Fix this WASI module import mismatch without changing global tools.",
+      "must": ["inspect", "produce-build-plan", "project-local-mutation-authorized", "environment-approval-required", "validate-when-possible"]
+    },
+    {
+      "id": "repair-component-wit",
+      "mode": "REPAIR",
+      "language": "javascript",
+      "environment": "component-model",
+      "query": "Repair this component/WIT mismatch in the JavaScript component package.",
+      "must": ["inspect", "produce-build-plan", "project-local-mutation-authorized", "environment-approval-required", "validate-when-possible"]
+    },
+    {
+      "id": "validate-core-module",
+      "mode": "VALIDATE",
+      "language": "unknown",
+      "environment": "unknown",
+      "query": "Validate this generated .wasm artifact.",
+      "must": ["inspect-existing-artifact", "allowlisted-validation", "no-rebuild", "no-artifact-execution"]
+    },
+    {
+      "id": "validate-wasi-module",
+      "mode": "VALIDATE",
+      "language": "unknown",
+      "environment": "wasi-preview1",
+      "query": "Validate this WASI module without running it.",
+      "must": ["inspect-existing-artifact", "allowlisted-validation", "no-rebuild", "no-artifact-execution"]
+    },
+    {
+      "id": "validate-component",
+      "mode": "VALIDATE",
+      "language": "unknown",
+      "environment": "component-model",
+      "query": "Check whether this WebAssembly component is valid.",
+      "must": ["inspect-existing-artifact", "allowlisted-validation", "no-rebuild", "no-artifact-execution"]
+    }
+  ],
+  "intentNegativeCases": [
+    {
+      "id": "how-do-i-build",
+      "query": "How do I build this with wasm-pack?",
+      "mustNot": ["build-execution-authorized", "tool-install-authorized"]
+    },
+    {
+      "id": "tool-mention-only",
+      "query": "This project mentions wasm-pack in the README.",
+      "mustNot": ["build-execution-authorized", "tool-install-authorized"]
+    },
+    {
+      "id": "missing-rust-target",
+      "query": "The Rust target wasm32-unknown-unknown is missing.",
+      "mustNot": ["automatic-rust-target-install"]
+    },
+    {
+      "id": "missing-system-package",
+      "query": "The system package clang is missing.",
+      "mustNot": ["automatic-system-package-install"]
+    }
   ]
 }

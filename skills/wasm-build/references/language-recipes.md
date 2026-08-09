@@ -31,16 +31,16 @@ do not claim parity with Tier 1.
 
 ## Tier 1: C
 
-- `whenToUse`: C program targeting WASI through wasi-sdk.
-- `whenNotToUse`: Browser APIs or Emscripten JS glue are required.
-- `targetChoices`: wasi-preview1, embedded host.
-- `prerequisites`: wasi-sdk installed.
-- `buildCommands`: `/opt/wasi-sdk/bin/clang --target=wasm32-wasi -o app.wasm src/main.c`.
-- `artifactPaths`: `app.wasm`.
-- `validationCommands`: `wasm-tools validate app.wasm`.
+- `whenToUse`: C program targeting browser through Emscripten or WASI through wasi-sdk.
+- `whenNotToUse`: Host requires Component Model bindings not present in the project.
+- `targetChoices`: browser, wasi-preview1, embedded host.
+- `prerequisites`: Emscripten or wasi-sdk installed, depending on target.
+- `buildCommands`: `emcc src/main.c -o public/app.js`; `/opt/wasi-sdk/bin/clang --target=wasm32-wasi -o app.wasm src/main.c`.
+- `artifactPaths`: `public/app.wasm`, `public/app.js`, `app.wasm`.
+- `validationCommands`: `wasm-tools validate app.wasm`; browser smoke test after approval.
 - `smokeTestCommand`: `wasmtime run app.wasm`.
-- `commonFailureClasses`: missing wasi-sdk, unsupported syscall, missing import.
-- `negativeCase`: Do not use Emscripten when the requested target is WASI CLI.
+- `commonFailureClasses`: Emscripten versus WASI confusion, missing wasi-sdk, unsupported syscall, missing import.
+- `negativeCase`: Do not use Emscripten when the requested target is WASI CLI; do not use wasi-sdk when browser JS glue is required.
 
 ## Tier 1: C++
 

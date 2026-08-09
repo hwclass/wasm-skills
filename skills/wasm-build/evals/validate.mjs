@@ -21,6 +21,7 @@ const requiredPaths = [
   'package.json',
   'skills/wasm-build/SKILL.md',
   'skills/wasm-build/README.md',
+  'skills/wasm-build/references/execution-intent.md',
   'skills/wasm-build/references/target-selection.md',
   'skills/wasm-build/references/language-recipes.md',
   'skills/wasm-build/references/failure-diagnosis.md',
@@ -29,6 +30,8 @@ const requiredPaths = [
   'skills/wasm-build/assets/build-plan.examples.md',
   'skills/wasm-build/scripts/inspect-wasm-project.mjs',
   'skills/wasm-build/scripts/inspect-wasm-artifact.mjs',
+  'skills/wasm-build/evals/README.md',
+  'skills/wasm-build/evals/build-matrix.json',
   'skills/wasm-build/evals/trigger-queries.json',
   'skills/wasm-build/evals/build-cases.json'
 ];
@@ -120,6 +123,25 @@ async function validateStructure() {
   for (const dir of ['rust-browser', 'rust-wasi', 'rust-component', 'tinygo-minimal', 'c-wasi-minimal', 'js-component-minimal']) {
     assert.ok(fs.existsSync(path.join(root, 'skills/wasm-build/examples', dir, 'README.md')), `missing example ${dir}`);
   }
+  for (const rel of [
+    'skills/wasm-build/examples/rust-browser/before/Cargo.toml',
+    'skills/wasm-build/examples/rust-browser/before/Cargo.lock',
+    'skills/wasm-build/examples/rust-browser/before/index.html',
+    'skills/wasm-build/examples/rust-browser/before/src/lib.rs'
+  ]) {
+    assert.ok(fs.existsSync(path.join(root, rel)), `missing rust-browser fixture file ${rel}`);
+  }
+  for (const rel of [
+    'skills/wasm-build/examples/rust-browser/Cargo.toml',
+    'skills/wasm-build/examples/rust-browser/index.html',
+    'skills/wasm-build/examples/rust-browser/src',
+    'skills/wasm-build/examples/rust-browser/target',
+    'skills/wasm-build/examples/rust-browser/pkg',
+    'skills/wasm-build/examples/rust-browser/before/target',
+    'skills/wasm-build/examples/rust-browser/before/pkg'
+  ]) {
+    assert.ok(!fs.existsSync(path.join(root, rel)), `rust-browser fixture must not include ${rel}`);
+  }
 }
 
 async function validateContent() {
@@ -137,6 +159,7 @@ async function validateContent() {
   assert.ok(Buffer.byteLength(body, 'utf8') < 10000, 'SKILL.md body exceeds approved size limit');
   for (const rel of [
     'skills/wasm-build/references/target-selection.md',
+    'skills/wasm-build/references/execution-intent.md',
     'skills/wasm-build/references/language-recipes.md',
     'skills/wasm-build/references/failure-diagnosis.md',
     'skills/wasm-build/references/runtime-validation.md',
@@ -150,11 +173,43 @@ async function validateContent() {
   }
   assertIncludes(skill, 'must not modify project files', 'SKILL.md');
   assertIncludes(skill, 'explicitly requested execution', 'SKILL.md');
+  assertIncludes(skill, 'PLAN, BUILD, REPAIR, or VALIDATE', 'SKILL.md');
+  assertIncludes(skill.toLowerCase().replace(/\s+/g, ' '), 'do not ask for redundant approval', 'SKILL.md');
+  assertIncludes(skill, 'project-external prerequisites', 'SKILL.md');
+  assert.ok(!/BUILD[\s\S]{0,240}wasm-pack/.test(skill), 'SKILL.md must not define BUILD solely through wasm-pack');
+
+  const executionIntent = read('skills/wasm-build/references/execution-intent.md');
+  for (const modeName of ['PLAN', 'BUILD', 'REPAIR', 'VALIDATE']) {
+    assertIncludes(executionIntent, `## ${modeName}`, 'execution-intent.md');
+  }
+  for (const term of [
+    'language-independent',
+    'environment-independent',
+    'target environment',
+    'artifact type',
+    'runtime/host',
+    'redundant approval',
+    'Project-external or environment-level mutations',
+    'wasi-sdk or Emscripten',
+    'installing TinyGo',
+    'installing jco globally',
+    'explicit approval',
+    'Do not execute Wasm artifacts in inspection mode',
+    'Mentioning `wasm-pack`',
+    'Missing language targets must not be silently installed',
+    'Missing system packages must not be silently installed'
+  ]) {
+    assertIncludes(executionIntent, term, 'execution-intent.md');
+  }
+  assert.ok(!/## BUILD[\s\S]*Rust targets/s.test(executionIntent), 'execution-intent.md must not require Rust-specific BUILD behavior');
 
   const targetSelection = read('skills/wasm-build/references/target-selection.md');
   for (const runtime of runtimes) assertIncludes(targetSelection, `## ${runtime}`, 'target-selection.md');
   for (const field of runtimeFields) assertIncludes(targetSelection, field, 'target-selection.md');
   assertIncludes(targetSelection, 'categories overlap', 'target-selection.md');
+  assertIncludes(targetSelection, 'Do not treat this file as one flat mutually exclusive enum', 'target-selection.md');
+  assertIncludes(targetSelection, 'If the intended environment cannot be established safely', 'target-selection.md');
+  assertIncludes(targetSelection, 'Representative Conditional Paths', 'target-selection.md');
 
   const recipes = read('skills/wasm-build/references/language-recipes.md');
   for (const language of tier1) assertIncludes(recipes, `Tier 1: ${language}`, 'language-recipes.md');
@@ -204,6 +259,12 @@ async function validateContent() {
   for (const entry of specKitSkills) {
     assert.ok(fs.existsSync(path.join(agentSkillsDir, entry.name, 'SKILL.md')), `${entry.name} missing SKILL.md`);
   }
+
+  const evalReadme = read('skills/wasm-build/evals/README.md');
+  assertIncludes(evalReadme, 'repository-owned evaluation infrastructure', 'evals/README.md');
+  assertIncludes(evalReadme, 'not a universal Agent Skills schema', 'evals/README.md');
+  const rustBrowserReadme = read('skills/wasm-build/examples/rust-browser/README.md');
+  assertIncludes(rustBrowserReadme, 'one route through the general `wasm-build` decision model', 'rust-browser/README.md');
 }
 
 async function validateFixtures() {
@@ -213,6 +274,7 @@ async function validateFixtures() {
   assert.ok(triggers.shouldNotActivate.length >= 8);
   assert.ok(triggers.falsePositiveCases.length >= 4);
   assert.ok(triggers.falseNegativePrevention.length >= 4);
+  validateIntentFixtures(triggers);
   const categories = new Set(triggers.shouldNotActivate.map((item) => item.category));
   for (const category of [
     'native non-Wasm compilation',
@@ -231,6 +293,7 @@ async function validateFixtures() {
   const cases = JSON.parse(read('skills/wasm-build/evals/build-cases.json'));
   assert.equal(cases.schemaVersion, '1.0');
   assert.ok(cases.cases.length >= 6);
+  validateBuildMatrix();
 
   const template = read('skills/wasm-build/assets/build-plan.template.md');
   const fieldOrder = ['schemaVersion', 'projectRoot', 'detectedFacts', 'intendedEnvironment', 'runtime', 'target', 'artifactType', 'language', 'toolchain', 'buildCommand', 'validationCommands', 'smokeTestCommand', 'filesExpectedToChange', 'risks', 'fallbackPath', 'documentationUpdates', 'approvalRequired'];
@@ -260,6 +323,116 @@ async function validateFixtures() {
     assert.equal(example.approvalRequired, true);
     assert.ok(!JSON.stringify(example).match(/\d{4}-\d{2}-\d{2}|random|uuid/i), `non-deterministic data in ${example.language}`);
   }
+}
+
+function validateBuildMatrix() {
+  const matrix = JSON.parse(read('skills/wasm-build/evals/build-matrix.json'));
+  assert.equal(matrix.schemaVersion, '1.0');
+  assertIncludes(matrix.description, 'Repository-owned', 'build-matrix.json');
+  assert.ok(Array.isArray(matrix.cases), 'build-matrix cases must be an array');
+  assert.ok(matrix.cases.length >= 8, 'build-matrix must include representative supported combinations');
+
+  const languages = new Set();
+  const environments = new Set();
+  const artifactTypes = new Set();
+  const toolchainFamilies = new Set();
+  const validationFamilies = new Set();
+  const byId = new Map();
+  for (const item of matrix.cases) {
+    for (const field of ['id', 'language', 'environment', 'artifactType', 'expectedToolchainFamily', 'expectedValidationFamily', 'unsupportedOrAmbiguous']) {
+      assert.ok(Object.prototype.hasOwnProperty.call(item, field), `build-matrix case missing ${field}`);
+    }
+    assert.ok(!byId.has(item.id), `duplicate build-matrix id ${item.id}`);
+    byId.set(item.id, item);
+    assert.ok(Array.isArray(item.expectedToolchainFamily), `${item.id} expectedToolchainFamily must be array`);
+    assert.ok(Array.isArray(item.expectedValidationFamily), `${item.id} expectedValidationFamily must be array`);
+    assert.ok(Array.isArray(item.unsupportedOrAmbiguous), `${item.id} unsupportedOrAmbiguous must be array`);
+    languages.add(item.language);
+    environments.add(item.environment);
+    artifactTypes.add(item.artifactType);
+    for (const family of item.expectedToolchainFamily) toolchainFamilies.add(family);
+    for (const family of item.expectedValidationFamily) validationFamilies.add(family);
+  }
+  for (const language of ['rust', 'tinygo', 'c', 'cpp', 'javascript']) {
+    assert.ok(languages.has(language), `build-matrix missing ${language}`);
+  }
+  for (const environment of ['browser', 'wasi-preview1', 'component-model', 'extism', 'spin', 'unknown']) {
+    assert.ok(environments.has(environment), `build-matrix missing ${environment}`);
+  }
+  for (const artifactType of ['core-module', 'wasi-command', 'component', 'js-bound-module', 'unknown']) {
+    assert.ok(artifactTypes.has(artifactType), `build-matrix missing ${artifactType}`);
+  }
+  for (const family of ['wasm-pack', 'wasm-bindgen', 'wasi-sdk', 'emscripten', 'tinygo', 'jco']) {
+    assert.ok(toolchainFamilies.has(family), `build-matrix missing toolchain family ${family}`);
+  }
+  for (const family of ['static-wasm-validation', 'browser-smoke-test', 'wasi-runtime-smoke-test', 'component-validation', 'wit-inspection']) {
+    assert.ok(validationFamilies.has(family), `build-matrix missing validation family ${family}`);
+  }
+  assert.ok(byId.get('unknown-rust-environment').unsupportedOrAmbiguous.includes('requires-target-clarification'), 'build-matrix must encode unknown environment ambiguity');
+}
+
+function validateIntentFixtures(triggers, selectedMode = null) {
+  assert.ok(Array.isArray(triggers.intentCases), 'intentCases must be an array');
+  assert.ok(Array.isArray(triggers.intentNegativeCases), 'intentNegativeCases must be an array');
+  const cases = selectedMode
+    ? triggers.intentCases.filter((item) => item.mode === selectedMode)
+    : triggers.intentCases;
+  assert.ok(cases.length > 0, `missing intent cases for ${selectedMode || 'all modes'}`);
+  const byMode = new Map();
+  for (const item of triggers.intentCases) {
+    assert.ok(['PLAN', 'BUILD', 'BUILD_MISSING_PREREQUISITE', 'REPAIR', 'VALIDATE'].includes(item.mode), `unsupported intent mode ${item.mode}`);
+    assert.ok(item.id && item.query && Array.isArray(item.must), `invalid intent case ${item.id || '<missing id>'}`);
+    assert.ok(item.language && item.environment, `intent case ${item.id} must include language and environment`);
+    byMode.set(item.mode, (byMode.get(item.mode) || 0) + 1);
+  }
+  for (const modeName of ['PLAN', 'BUILD', 'BUILD_MISSING_PREREQUISITE', 'REPAIR', 'VALIDATE']) {
+    assert.ok(byMode.get(modeName) > 0, `missing ${modeName} intent case`);
+  }
+
+  const requiredByMode = {
+    PLAN: ['no-mutation', 'no-build-execution'],
+    BUILD: ['build-execution-authorized', 'validate-after-success', 'no-redundant-build-approval'],
+    BUILD_MISSING_PREREQUISITE: ['detect-missing-prerequisite', 'no-automatic-environment-install', 'request-environment-approval', 'resume-after-approval'],
+    REPAIR: ['project-local-mutation-authorized', 'environment-approval-required'],
+    VALIDATE: ['inspect-existing-artifact', 'allowlisted-validation', 'no-rebuild', 'no-artifact-execution']
+  };
+  for (const [modeName, required] of Object.entries(requiredByMode)) {
+    if (selectedMode && selectedMode !== modeName) continue;
+    const modeCases = triggers.intentCases.filter((item) => item.mode === modeName);
+    const capabilities = new Set(modeCases.flatMap((item) => item.must));
+    for (const capability of required) {
+      assert.ok(capabilities.has(capability), `${modeName} missing ${capability}`);
+    }
+  }
+
+  const negativeCapabilities = new Set(triggers.intentNegativeCases.flatMap((item) => item.mustNot || []));
+  for (const capability of [
+    'build-execution-authorized',
+    'tool-install-authorized',
+    'automatic-rust-target-install',
+    'automatic-system-package-install'
+  ]) {
+    assert.ok(negativeCapabilities.has(capability), `intent negative cases missing ${capability}`);
+  }
+
+  const positiveActivation = triggers.shouldActivate.map((item) => `${item.id} ${item.query}`.toLowerCase()).join('\n');
+  for (const term of ['rust', 'wasi', 'component', 'tinygo', 'c ', 'emscripten', 'javascript', 'artifact', 'spin', 'extism']) {
+    assertIncludes(positiveActivation, term, 'trigger-queries.json shouldActivate');
+  }
+  const intentLanguages = new Set(triggers.intentCases.map((item) => item.language));
+  const tier1FamiliesCovered = ['rust', 'tinygo', 'c', 'cpp', 'javascript'].filter((language) => intentLanguages.has(language));
+  assert.ok(tier1FamiliesCovered.length >= 4, 'intent cases must cover at least 4 Tier-1 language/toolchain families');
+  const intentEnvironments = new Set(triggers.intentCases.map((item) => item.environment));
+  for (const environment of ['browser', 'wasi-preview1', 'component-model']) {
+    assert.ok(intentEnvironments.has(environment), `intent cases missing ${environment}`);
+  }
+  assert.ok(intentEnvironments.has('unknown'), 'intent cases must cover ambiguous target selection');
+}
+
+async function validateIntentMode(selectedMode) {
+  const triggers = JSON.parse(read('skills/wasm-build/evals/trigger-queries.json'));
+  assert.equal(triggers.schemaVersion, '1.0');
+  validateIntentFixtures(triggers, selectedMode);
 }
 
 async function validateInstall() {
@@ -512,6 +685,11 @@ async function runMode(selected) {
   if (selected === 'install') return validateInstall();
   if (selected === 'scripts') return validateScripts();
   if (selected === 'evals') return validateFixtures();
+  if (selected === 'intent-plan') return validateIntentMode('PLAN');
+  if (selected === 'intent-build') return validateIntentMode('BUILD');
+  if (selected === 'intent-build-missing-prerequisite') return validateIntentMode('BUILD_MISSING_PREREQUISITE');
+  if (selected === 'intent-repair') return validateIntentMode('REPAIR');
+  if (selected === 'intent-validate') return validateIntentMode('VALIDATE');
   if (selected === 'all') {
     await validateStructure();
     await validateContent();

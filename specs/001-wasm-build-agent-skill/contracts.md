@@ -315,7 +315,12 @@ when present, but must not modify the artifact or install missing tools.
 
 **Approval contract**: `approvalRequired` is `true` for any plan that would
 modify files, install dependencies, invoke project build commands, or execute
-generated commands. It is `false` only for read-only inspection and planning.
+generated commands. The approval boundary may already be satisfied by an
+explicit current user instruction to build, compile, repair, modify, or validate
+within the requested project scope; otherwise the agent must ask after
+presenting the plan. Environment-level changes such as installing Rust targets,
+global tools, or system packages always require separate explicit approval. It
+is `false` only for read-only inspection and planning.
 
 ## Evaluation Fixtures
 

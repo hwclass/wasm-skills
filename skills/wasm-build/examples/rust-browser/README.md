@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This example verifies the complete public workflow:
+This example verifies the public `wasm-build` Agent Skill workflow:
 
 ```text
 GitHub wasm-build skill
@@ -10,18 +10,20 @@ GitHub wasm-build skill
 -> Codex skill discovery
 -> project inspection
 -> Wasm Build Plan
--> explicit authorization
--> creation of an improved after/ project
+-> intent-aware authorization
+-> optional project transformation
 -> optional build and validation
 ```
 
-The fixture is intentionally a manual integration test. This repository prepares
-the starting project only; a separate fresh Codex session using the installed
-`wasm-build` Agent Skill produces the generated result.
+The fixture is intentionally manual. Use a separate fresh Codex session with the
+installed `wasm-build` Agent Skill to produce or exercise generated results.
+This fixture tests one route through the general `wasm-build` decision model:
+Rust + Browser + PLAN/REPAIR/BUILD. It must not be treated as the normative
+shape for other languages, environments, artifact types, or runtimes.
 
 ## Initial Structure
 
-Before running the test, this directory intentionally contains:
+Before Test A runs, this directory intentionally contains:
 
 ```text
 rust-browser/
@@ -34,10 +36,11 @@ rust-browser/
         └── lib.rs
 ```
 
-`after/` MUST NOT exist yet.
+`before/` is the immutable starting project.
 
-`after/` is test output produced by the installed skill. It is not part of the
-initial fixture.
+`after/` is generated test output. It may be absent before Test A. If present,
+it should contain only meaningful source/configuration/documentation files
+created by the installed skill, not generated `target/` or `pkg/` directories.
 
 ## Install For Codex
 
@@ -57,7 +60,16 @@ Verify the global Codex skill installation:
 skills list --global --agent codex --json
 ```
 
-## How To Run The Test
+## Test A - Planning And Transformation
+
+This flow demonstrates:
+
+```text
+inspect
+-> Wasm Build Plan
+-> authorized project changes
+-> after/ creation
+```
 
 Open the starting project as the Codex workspace:
 
@@ -67,7 +79,7 @@ code skills/wasm-build/examples/rust-browser/before
 
 Then start a fresh Codex session in that workspace.
 
-## Exact Test Prompt
+### Test A Prompt
 
 Copy and paste this prompt into the fresh Codex session:
 
@@ -147,6 +159,49 @@ At completion report:
 Do not run this prompt while preparing the fixture. It is for the separate manual
 integration-test session.
 
+## Test B - Complete Build Execution
+
+This flow runs from the generated `after/` project. Run Test A first, or provide
+an intentional reference `after/` project later.
+
+Open the generated project as the Codex workspace:
+
+```bash
+code skills/wasm-build/examples/rust-browser/after
+```
+
+Then start a fresh Codex session in that workspace.
+
+### Test B Prompt
+
+Copy and paste this prompt:
+
+```text
+Use the installed wasm-build skill to build and validate this project completely.
+
+You are authorized to run the required project build and validation commands.
+
+If an environment or toolchain prerequisite is missing, identify the exact
+prerequisite and ask me before installing or modifying anything outside this
+project.
+```
+
+Expected behavior:
+
+1. If existing build prerequisites are installed, the agent inspects, plans,
+   builds immediately, and validates the produced artifact.
+2. If a project-external prerequisite is missing, such as a Rust target,
+   `wasm-pack`, or `wasm-tools`, the agent identifies the exact missing
+   prerequisite and asks before installing or modifying anything outside the
+   project.
+3. After approval for a missing project-external prerequisite, the agent installs
+   only the approved prerequisite, resumes the build, and validates the artifact.
+4. The agent does not ask for a redundant second approval for the build already
+   requested in the current prompt.
+
+Do not record a successful Test B result unless the build and validation
+actually succeeded in the local environment.
+
 ## Expected Behavior
 
 Observable pass conditions:
@@ -158,11 +213,14 @@ Observable pass conditions:
 5. A browser-appropriate Rust/Wasm toolchain is selected.
 6. A Wasm Build Plan is shown before mutation.
 7. `before/` remains byte-for-byte unchanged.
-8. `after/` is created by the agent.
+8. Test A creates `after/` when transformation is authorized.
 9. Changes in `after/` correspond to findings in the plan.
 10. No toolchains are installed automatically.
 11. Generated build directories are not retained.
-12. Validation occurs only when required tools already exist.
+12. Validation occurs only when required tools already exist or after explicit
+    approval for missing project-external prerequisites.
+13. Test B treats the explicit build request as build authorization and does not
+    require a redundant second approval for project-local build commands.
 
 ## Manual Verification
 
@@ -182,12 +240,13 @@ Verify that `before/` remains unchanged using Git:
 git diff -- skills/wasm-build/examples/rust-browser/before
 ```
 
-Expected outcome: no diff. Any diff under `before/` means the test failed because
-the starting project was modified.
+Expected outcome: no diff after `before/` has been committed as the baseline.
+Any later diff under `before/` means the test failed because the starting project
+was modified.
 
 ## Resetting The Test
 
-Delete generated output to rerun the test:
+Delete generated output to rerun Test A:
 
 ```bash
 rm -rf skills/wasm-build/examples/rust-browser/after

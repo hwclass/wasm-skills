@@ -5,6 +5,51 @@ Runtime categories overlap. Browser and Node are host environments. WASI Preview
 artifact/interface model. Wasmtime and WasmEdge are runtimes that may execute
 WASI modules or components. Spin and Extism impose host/plugin expectations.
 
+Do not treat this file as one flat mutually exclusive enum. Compose the build
+decision from user intent, source language/toolchain, target environment,
+artifact type, runtime/host, and available prerequisites.
+
+## Decision Flow
+
+1. Classify user intent: PLAN, BUILD, REPAIR, or VALIDATE.
+2. Inspect project evidence and existing build metadata.
+3. Detect source language and likely toolchain family.
+4. Identify or clarify the intended execution environment.
+5. Determine artifact type: core module, WASI command, component, JS-bound
+   module, or unknown.
+6. Choose a compatible toolchain for the detected language and target.
+7. Check whether required prerequisites already exist.
+8. Produce the Wasm Build Plan.
+9. Execute according to intent and approval boundary.
+10. Validate artifacts with static checks and approved runtime smoke tests.
+11. Diagnose failures by class before changing commands.
+12. Document the successful build, validation, runtime, prerequisites, and
+    assumptions.
+
+If the intended environment cannot be established safely, ask for clarification
+or report ambiguity. Do not silently select browser Wasm, WASI, Component Model,
+or a runtime based only on the source language.
+
+## Representative Conditional Paths
+
+- Rust + browser -> use wasm-pack / wasm-bindgen when the host is browser or web
+  worker and JS glue is expected.
+- Rust + WASI Preview 1 -> use a Rust WASI target or compatible toolchain when
+  the result is a CLI-like WASI command.
+- Rust + Component Model -> use cargo-component or an equivalent current path
+  when WIT/component interfaces are required.
+- TinyGo + WASI -> use the TinyGo WASI target supported by the installed TinyGo
+  version when Go code fits TinyGo constraints.
+- C/C++ + browser -> use Emscripten when browser APIs or JS glue are required.
+- C/C++ + WASI -> use wasi-sdk when the host expects a WASI command or
+  compatible core module.
+- JavaScript + Component Model -> use jco/componentization when WIT/component
+  packaging is required.
+
+These are decision paths, not universal prescriptions. Confirm project evidence,
+target environment, artifact type, host/runtime assumptions, and installed
+prerequisites before recommending commands.
+
 ## Browser
 
 - `whenToChoose`: UI or web-worker use with JavaScript integration.
