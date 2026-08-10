@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "1.0",
+  "validationCommands": [
+    {
+      "command": "npm run validate",
+      "status": "passed",
+      "notes": "Baseline command passed; npm printed a local update-check warning outside the repository."
+    },
+    {
+      "command": "npm run test:install",
+      "status": "passed",
+      "notes": "Baseline command passed; npm printed a local update-check warning outside the repository."
+    },
+    {
+      "command": "npm run test:scripts",
+      "status": "passed",
+      "notes": "Baseline command passed; npm printed a local update-check warning outside the repository."
+    },
+    {
+      "command": "npm run test:evals",
+      "status": "passed",
+      "notes": "Baseline command passed; npm printed a local update-check warning outside the repository."
+    },
+    {
+      "command": "node skills/wasm-build/evals/validate.mjs intent-plan",
+      "status": "passed",
+      "notes": "Focused PLAN intent baseline passed."
+    },
+    {
+      "command": "node skills/wasm-build/evals/validate.mjs intent-build",
+      "status": "passed",
+      "notes": "Focused BUILD intent baseline passed."
+    },
+    {
+      "command": "node skills/wasm-build/evals/validate.mjs intent-build-missing-prerequisite",
+      "status": "passed",
+      "notes": "Focused missing-prerequisite BUILD intent baseline passed."
+    },
+    {
+      "command": "node skills/wasm-build/evals/validate.mjs intent-repair",
+      "status": "passed",
+      "notes": "Focused REPAIR intent baseline passed."
+    },
+    {
+      "command": "node skills/wasm-build/evals/validate.mjs intent-validate",
+      "status": "passed",
+      "notes": "Focused VALIDATE intent baseline passed."
+    }
+  ],
+  "startingStateGaps": [
+    {
+      "routeId": "js-component",
+      "path": "skills/wasm-build/examples/js-component-minimal/",
+      "gap": "README-only route before hardening; missing source, package/configuration, WIT, and route evidence."
+    },
+    {
+      "routeId": "tinygo-wasi",
+      "path": "skills/wasm-build/examples/tinygo-minimal/",
+      "gap": "README-only route before hardening; missing source, go.mod, build command file or command evidence, and route evidence."
+    }
+  ],
+  "generatedOutputCheck": {
+    "status": "passed",
+    "checkedPaths": [
+      "skills/wasm-build/examples/"
+    ],
+    "absentGeneratedDirectories": [
+      "dist/",
+      "node_modules/",
+      "pkg/",
+      "target/"
+    ]
+  }
+}

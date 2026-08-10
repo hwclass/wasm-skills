@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "routeId": "rust-browser",
+  "missingPrerequisite": "wasm32-unknown-unknown Rust target",
+  "whyNeeded": "The Rust browser wasm-pack route requires the wasm32-unknown-unknown target before the project-local build can run.",
+  "mutationScope": "global-toolchain",
+  "approvalRequired": true,
+  "approvalStatus": "requested",
+  "resumeStatus": "blocked",
+  "notes": "No rustup target installation was performed during implementation because environment/toolchain mutation requires explicit approval."
+}

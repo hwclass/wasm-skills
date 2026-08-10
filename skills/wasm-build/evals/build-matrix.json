@@ -7,6 +7,8 @@
       "language": "rust",
       "environment": "browser",
       "artifactType": "js-bound-module",
+      "fixturePath": "skills/wasm-build/examples/rust-browser/",
+      "evidencePath": "skills/wasm-build/evals/fixtures/rust-browser-evidence.json",
       "expectedToolchainFamily": ["wasm-bindgen", "wasm-pack"],
       "expectedValidationFamily": ["static-wasm-validation", "browser-smoke-test"],
       "unsupportedOrAmbiguous": []
@@ -34,6 +36,8 @@
       "language": "tinygo",
       "environment": "wasi-preview1",
       "artifactType": "wasi-command",
+      "fixturePath": "skills/wasm-build/examples/tinygo-minimal/",
+      "evidencePath": "skills/wasm-build/evals/fixtures/tinygo-wasi-evidence.json",
       "expectedToolchainFamily": ["tinygo"],
       "expectedValidationFamily": ["static-wasm-validation", "wasi-runtime-smoke-test"],
       "unsupportedOrAmbiguous": []
@@ -57,10 +61,12 @@
       "unsupportedOrAmbiguous": []
     },
     {
-      "id": "javascript-component",
+      "id": "js-component",
       "language": "javascript",
       "environment": "component-model",
       "artifactType": "component",
+      "fixturePath": "skills/wasm-build/examples/js-component-minimal/",
+      "evidencePath": "skills/wasm-build/evals/fixtures/js-component-evidence.json",
       "expectedToolchainFamily": ["jco"],
       "expectedValidationFamily": ["component-validation", "wit-inspection"],
       "unsupportedOrAmbiguous": []

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Hardened `wasm-build` with real route fixtures for Rust browser Wasm, TinyGo
+  WASI, and JavaScript Component Model build-level workflows.
+- Added repository-owned integration evidence records that distinguish static
+  eval checks, real build evidence, and missing-prerequisite approval evidence.
+- Improved artifact inspection to report artifact form, imports, exports, and
+  memory export presence without executing Wasm artifacts.
+- Expanded failure diagnosis entries with evidence-driven safe next actions and
+  unsafe random actions to avoid.
+
 ## 0.1.0 - 2026-08-05
 
 - Added the first installable Agent Skill, `wasm-build`.

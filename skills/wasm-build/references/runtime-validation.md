@@ -9,6 +9,18 @@ the user explicitly requested execution or approved the build plan.
 - Use `wasm-tools validate` for static validation when available.
 - Use `wasm-objdump` to inspect sections/imports/exports when available.
 - Missing optional tools are skipped with actionable messages.
+- `inspect-wasm-artifact.mjs` reports `artifactForm`, `imports`, `exports`,
+  and `memoryExportPresent` from safe structural inspection where possible.
+- `artifactForm` is `core-module`, `component`, `unknown`, or `invalid`.
+- `imports` and `exports` are deterministic sorted arrays. For core modules,
+  they come from byte-level section parsing. For components, they may come from
+  safe component-interface inspection when available.
+- `memoryExportPresent` is `true`, `false`, or `null` when unavailable.
+- Inspection mode never executes Wasm artifacts. Runtime smoke tests are a
+  separate action and require explicit execution approval.
+- Missing validators, validator timeouts, or capped validator output are
+  warnings or skipped/error validator results; they are not proof that a route
+  succeeded.
 
 ## Browser
 

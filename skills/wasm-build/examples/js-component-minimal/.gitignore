@@ -1,0 +1,4 @@
+app.component.wasm
+dist/
+node_modules/
+tmp/

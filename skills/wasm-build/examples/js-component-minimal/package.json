@@ -1,0 +1,10 @@
+{
+  "name": "js-component-minimal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:component": "jco componentize src/index.js --wit wit/world.wit --world-name app -o app.component.wasm",
+    "validate:component": "jco wit app.component.wasm"
+  },
+  "devDependencies": {}
+}
