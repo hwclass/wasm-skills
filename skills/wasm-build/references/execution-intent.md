@@ -68,6 +68,10 @@ Identify the exact prerequisite, explain why it is needed, ask for explicit
 approval, then install only the approved prerequisite before resuming the
 original build and validation workflow.
 
+If approval is not available in the current session, record the route as
+`not-run` or blocked by the exact missing prerequisite. Do not treat missing
+optional tooling as build success.
+
 ## REPAIR
 
 Typical requests:

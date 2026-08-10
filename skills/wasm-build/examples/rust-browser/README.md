@@ -21,6 +21,16 @@ This fixture tests one route through the general `wasm-build` decision model:
 Rust + Browser + PLAN/REPAIR/BUILD. It must not be treated as the normative
 shape for other languages, environments, artifact types, or runtimes.
 
+## Prerequisites
+
+- Rust toolchain
+- `wasm32-unknown-unknown` target
+- `wasm-pack`
+- `wasm-tools` for static artifact validation
+
+Missing external tools or targets must be reported as prerequisites. They must
+not be installed automatically.
+
 ## Initial Structure
 
 Before Test A runs, this directory intentionally contains:
@@ -263,3 +273,5 @@ B. be intentionally committed later as a reference result.
 
 For this initial fixture, choose A: `after/` is generated test output and MUST
 NOT be committed yet.
+
+Generated `target/` and `pkg/` directories MUST NOT be committed.

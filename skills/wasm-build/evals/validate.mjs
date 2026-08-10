@@ -33,7 +33,12 @@ const requiredPaths = [
   'skills/wasm-build/evals/README.md',
   'skills/wasm-build/evals/build-matrix.json',
   'skills/wasm-build/evals/trigger-queries.json',
-  'skills/wasm-build/evals/build-cases.json'
+  'skills/wasm-build/evals/build-cases.json',
+  'skills/wasm-build/evals/fixtures/integration-baseline.json',
+  'skills/wasm-build/evals/fixtures/rust-browser-evidence.json',
+  'skills/wasm-build/evals/fixtures/tinygo-wasi-evidence.json',
+  'skills/wasm-build/evals/fixtures/js-component-evidence.json',
+  'skills/wasm-build/evals/fixtures/missing-prerequisite-approval.json'
 ];
 
 const runtimes = ['Browser', 'Node', 'WASI Preview 1', 'WASI Preview 2', 'Component Model', 'Wasmtime', 'WasmEdge', 'Spin', 'Extism', 'Unknown'];
@@ -67,6 +72,10 @@ function parseJsonBlocks(markdown, file) {
   return blocks;
 }
 
+function readJson(rel) {
+  return JSON.parse(read(rel));
+}
+
 function parseSkillFrontmatter(markdown) {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n/);
   assert.ok(match, 'SKILL.md missing YAML frontmatter');
@@ -82,6 +91,22 @@ function parseSkillFrontmatter(markdown) {
 
 function validWasmBytes() {
   return Buffer.from([0, 0x61, 0x73, 0x6d, 1, 0, 0, 0]);
+}
+
+function structuralCoreWasmBytes() {
+  return Buffer.from([
+    0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+    0x01, 0x04, 0x01, 0x60, 0x00, 0x00,
+    0x02, 0x0c, 0x01, 0x03, 0x65, 0x6e, 0x76, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x00, 0x00,
+    0x03, 0x02, 0x01, 0x00,
+    0x05, 0x03, 0x01, 0x00, 0x01,
+    0x07, 0x10, 0x02, 0x06, 0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x02, 0x00, 0x03, 0x72, 0x75, 0x6e, 0x00, 0x01,
+    0x0a, 0x04, 0x01, 0x02, 0x00, 0x0b
+  ]);
+}
+
+function componentHeaderBytes() {
+  return Buffer.from([0x00, 0x61, 0x73, 0x6d, 0x0d, 0x00, 0x01, 0x00]);
 }
 
 function inspectProject(projectRoot) {
@@ -127,9 +152,18 @@ async function validateStructure() {
     'skills/wasm-build/examples/rust-browser/before/Cargo.toml',
     'skills/wasm-build/examples/rust-browser/before/Cargo.lock',
     'skills/wasm-build/examples/rust-browser/before/index.html',
-    'skills/wasm-build/examples/rust-browser/before/src/lib.rs'
+    'skills/wasm-build/examples/rust-browser/before/src/lib.rs',
+    'skills/wasm-build/examples/tinygo-minimal/go.mod',
+    'skills/wasm-build/examples/tinygo-minimal/main.go',
+    'skills/wasm-build/examples/tinygo-minimal/Makefile',
+    'skills/wasm-build/examples/tinygo-minimal/.gitignore',
+    'skills/wasm-build/examples/js-component-minimal/package.json',
+    'skills/wasm-build/examples/js-component-minimal/component.json',
+    'skills/wasm-build/examples/js-component-minimal/src/index.js',
+    'skills/wasm-build/examples/js-component-minimal/wit/world.wit',
+    'skills/wasm-build/examples/js-component-minimal/.gitignore'
   ]) {
-    assert.ok(fs.existsSync(path.join(root, rel)), `missing rust-browser fixture file ${rel}`);
+    assert.ok(fs.existsSync(path.join(root, rel)), `missing fixture file ${rel}`);
   }
   for (const rel of [
     'skills/wasm-build/examples/rust-browser/Cargo.toml',
@@ -263,8 +297,11 @@ async function validateContent() {
   const evalReadme = read('skills/wasm-build/evals/README.md');
   assertIncludes(evalReadme, 'repository-owned evaluation infrastructure', 'evals/README.md');
   assertIncludes(evalReadme, 'not a universal Agent Skills schema', 'evals/README.md');
+  assertIncludes(evalReadme, 'JSON eval success does not prove route success', 'evals/README.md');
+  assertIncludes(evalReadme, 'Optional tool absence', 'evals/README.md');
   const rustBrowserReadme = read('skills/wasm-build/examples/rust-browser/README.md');
   assertIncludes(rustBrowserReadme, 'one route through the general `wasm-build` decision model', 'rust-browser/README.md');
+  validateFailureDiagnosisContent();
 }
 
 async function validateFixtures() {
@@ -294,6 +331,9 @@ async function validateFixtures() {
   assert.equal(cases.schemaVersion, '1.0');
   assert.ok(cases.cases.length >= 6);
   validateBuildMatrix();
+  validateHardeningFixtures();
+  validateIntegrationEvidence();
+  validateGeneratedOutputAbsence();
 
   const template = read('skills/wasm-build/assets/build-plan.template.md');
   const fieldOrder = ['schemaVersion', 'projectRoot', 'detectedFacts', 'intendedEnvironment', 'runtime', 'target', 'artifactType', 'language', 'toolchain', 'buildCommand', 'validationCommands', 'smokeTestCommand', 'filesExpectedToChange', 'risks', 'fallbackPath', 'documentationUpdates', 'approvalRequired'];
@@ -369,6 +409,137 @@ function validateBuildMatrix() {
     assert.ok(validationFamilies.has(family), `build-matrix missing validation family ${family}`);
   }
   assert.ok(byId.get('unknown-rust-environment').unsupportedOrAmbiguous.includes('requires-target-clarification'), 'build-matrix must encode unknown environment ambiguity');
+  for (const routeId of ['rust-browser', 'tinygo-wasi', 'js-component']) {
+    const item = byId.get(routeId);
+    assert.ok(item, `build-matrix missing hardening route ${routeId}`);
+    assert.ok(item.fixturePath, `${routeId} missing fixturePath`);
+    assert.ok(item.evidencePath, `${routeId} missing evidencePath`);
+  }
+  assert.ok(matrix.cases.length <= 12, 'build-matrix must remain representative, not Cartesian');
+}
+
+function validateHardeningFixtures() {
+  const routeChecks = [
+    {
+      id: 'rust-browser',
+      root: 'skills/wasm-build/examples/rust-browser/',
+      files: ['README.md', 'before/Cargo.toml', 'before/Cargo.lock', 'before/index.html', 'before/src/lib.rs'],
+      readmeTerms: ['Prerequisites', 'Expected Behavior', 'wasm32-unknown-unknown', 'wasm-pack', 'wasm-tools', 'Resetting The Test', 'MUST NOT be committed']
+    },
+    {
+      id: 'tinygo-wasi',
+      root: 'skills/wasm-build/examples/tinygo-minimal/',
+      files: ['README.md', 'go.mod', 'main.go', 'Makefile', '.gitignore'],
+      readmeTerms: ['TinyGo -> WASI', 'tinygo build -target=wasi -o app.wasm .', 'wasm-tools validate app.wasm', 'Reset Instructions', 'must not be installed automatically']
+    },
+    {
+      id: 'js-component',
+      root: 'skills/wasm-build/examples/js-component-minimal/',
+      files: ['README.md', 'package.json', 'component.json', 'src/index.js', 'wit/world.wit', '.gitignore'],
+      readmeTerms: ['JavaScript -> WebAssembly Component Model', 'jco componentize src/index.js --wit wit/world.wit --world-name app -o app.component.wasm', 'jco wit app.component.wasm', 'advanced WIT architecture', 'must not be installed automatically']
+    }
+  ];
+  for (const route of routeChecks) {
+    for (const file of route.files) {
+      assert.ok(fs.existsSync(path.join(root, route.root, file)), `${route.id} missing ${file}`);
+    }
+    const readme = read(path.join(route.root, 'README.md'));
+    for (const term of route.readmeTerms) assertIncludes(readme, term, `${route.id} README`);
+  }
+
+  const tinygo = JSON.parse(inspectProject(path.join(root, 'skills/wasm-build/examples/tinygo-minimal')));
+  assert.deepEqual(tinygo.languages, ['go', 'tinygo']);
+  assert.ok(tinygo.toolchainHints.includes('tinygo'));
+  assert.deepEqual(tinygo.buildFiles, ['Makefile']);
+
+  const jsComponent = JSON.parse(inspectProject(path.join(root, 'skills/wasm-build/examples/js-component-minimal')));
+  assert.deepEqual(jsComponent.languages, ['javascript']);
+  assert.deepEqual(jsComponent.witFiles, ['wit/world.wit']);
+  assert.deepEqual(jsComponent.runtimeConfigs, [{ type: 'component', path: 'component.json' }]);
+  assert.ok(jsComponent.packageScripts.some((item) => item.name === 'build:component'));
+}
+
+function validateIntegrationEvidence() {
+  const fieldOrder = ['schemaVersion', 'routeId', 'planSummary', 'authorizationBasis', 'prerequisiteState', 'commandsRun', 'buildResult', 'validationResult', 'artifactsProduced', 'generatedOutputPolicy', 'remainingGaps'];
+  const allowedRoutes = new Set(['rust-browser', 'tinygo-wasi', 'js-component']);
+  const allowedPrereq = new Set(['available', 'missing', 'approved-installed', 'blocked']);
+  const allowedBuild = new Set(['passed', 'failed', 'not-run']);
+  const allowedValidation = new Set(['passed', 'failed', 'skipped', 'not-run']);
+  const evidenceFiles = [
+    'skills/wasm-build/evals/fixtures/rust-browser-evidence.json',
+    'skills/wasm-build/evals/fixtures/tinygo-wasi-evidence.json',
+    'skills/wasm-build/evals/fixtures/js-component-evidence.json'
+  ];
+  const records = evidenceFiles.map((file) => ({ file, record: readJson(file) }));
+  for (const { file, record } of records) {
+    assert.deepEqual(Object.keys(record), fieldOrder, `${file} field order mismatch`);
+    assert.equal(record.schemaVersion, '1.0', `${file} schemaVersion mismatch`);
+    assert.ok(allowedRoutes.has(record.routeId), `${file} unsupported routeId`);
+    assert.ok(allowedPrereq.has(record.prerequisiteState), `${file} unsupported prerequisiteState`);
+    assert.ok(allowedBuild.has(record.buildResult), `${file} unsupported buildResult`);
+    assert.ok(allowedValidation.has(record.validationResult), `${file} unsupported validationResult`);
+    assert.ok(Array.isArray(record.commandsRun), `${file} commandsRun must be array`);
+    assert.ok(Array.isArray(record.artifactsProduced), `${file} artifactsProduced must be array`);
+    assert.ok(Array.isArray(record.remainingGaps), `${file} remainingGaps must be array`);
+    assert.ok(isSorted(record.artifactsProduced), `${file} artifactsProduced not sorted`);
+    assert.ok(isSorted(record.remainingGaps), `${file} remainingGaps not sorted`);
+    if (record.buildResult === 'passed') {
+      assert.ok(record.commandsRun.length > 0, `${file} passed build requires commandsRun`);
+      assert.equal(record.validationResult, 'passed', `${file} passed build must include passed validation`);
+      assert.ok(record.artifactsProduced.length > 0, `${file} passed build requires artifactsProduced`);
+    }
+  }
+  assert.ok(records.some(({ record }) => record.buildResult === 'passed' && record.validationResult === 'passed'), 'at least one route must have real build and validation evidence');
+  assert.ok(records.some(({ record }) => record.prerequisiteState === 'missing' && record.buildResult === 'not-run'), 'missing prerequisites must not be route success');
+
+  const prereq = readJson('skills/wasm-build/evals/fixtures/missing-prerequisite-approval.json');
+  assert.equal(prereq.schemaVersion, '1.0');
+  assert.equal(prereq.approvalRequired, true);
+  assert.equal(prereq.approvalStatus, 'requested');
+  assert.equal(prereq.resumeStatus, 'blocked');
+  assert.ok(['environment', 'global-toolchain', 'system'].includes(prereq.mutationScope));
+
+  const baseline = readJson('skills/wasm-build/evals/fixtures/integration-baseline.json');
+  assert.equal(baseline.schemaVersion, '1.0');
+  assert.ok(baseline.validationCommands.every((item) => item.status === 'passed'), 'baseline validation commands must pass');
+  assert.ok(baseline.startingStateGaps.some((item) => item.routeId === 'tinygo-wasi'));
+  assert.ok(baseline.startingStateGaps.some((item) => item.routeId === 'js-component'));
+}
+
+function validateGeneratedOutputAbsence() {
+  for (const route of ['rust-browser', 'tinygo-minimal', 'js-component-minimal']) {
+    const routeRoot = path.join(root, 'skills/wasm-build/examples', route);
+    for (const generated of ['target', 'pkg', 'dist', 'node_modules', 'tmp']) {
+      assert.ok(!fs.existsSync(path.join(routeRoot, generated)), `${route} must not retain generated ${generated}/`);
+    }
+  }
+  assert.ok(!fs.existsSync(path.join(root, 'skills/wasm-build/examples/tinygo-minimal/app.wasm')), 'tinygo app.wasm must not be committed');
+  assert.ok(!fs.existsSync(path.join(root, 'skills/wasm-build/examples/js-component-minimal/app.component.wasm')), 'js component artifact must not be committed');
+}
+
+function validateFailureDiagnosisContent() {
+  const diagnosis = read('skills/wasm-build/references/failure-diagnosis.md');
+  for (const required of [
+    'missing toolchain',
+    'missing target',
+    'wrong WASI preview',
+    'missing imports',
+    'incorrect exports',
+    'missing memory export where relevant',
+    'wasm-bindgen compatibility problems',
+    'Emscripten versus wasi-sdk confusion',
+    'WIT/world mismatch',
+    'component validation failure',
+    'runtime incompatibility',
+    'linker failures',
+    'target-incompatible native dependencies'
+  ]) {
+    assertIncludes(diagnosis, `| ${required} |`, 'failure-diagnosis.md');
+  }
+  for (const field of ['Symptoms', 'Likely causes', 'Inspection steps', 'Recommended next action', 'Unsafe action to avoid']) {
+    assertIncludes(diagnosis, field, 'failure-diagnosis.md');
+  }
+  assertIncludes(diagnosis, 'observable build output, validator output, artifact structure, or repository evidence', 'failure-diagnosis.md');
 }
 
 function validateIntentFixtures(triggers, selectedMode = null) {
@@ -626,6 +797,10 @@ async function validateArtifactInspection() {
     assert.equal(artifact.status, 0, artifact.stderr);
     const artifactReport = JSON.parse(artifact.stdout);
     assert.equal(artifactReport.wasmHeaderValid, true);
+    assert.equal(artifactReport.artifactForm, 'core-module');
+    assert.deepEqual(artifactReport.imports, []);
+    assert.deepEqual(artifactReport.exports, []);
+    assert.equal(artifactReport.memoryExportPresent, false);
     assert.ok(artifactReport.validation.every((item) => ['skipped', 'valid', 'invalid', 'error', 'timeout'].includes(item.status)));
     assert.equal(artifactReport.validation.find((item) => item.name === 'wasmtime').status, 'skipped');
     assert.ok(artifactReport.validation.some((item) => item.status === 'skipped' && item.summary === 'Tool not found'));
@@ -642,7 +817,29 @@ async function validateArtifactInspection() {
     assert.equal(invalidResult.status, 0, invalidResult.stderr);
     const invalidReport = JSON.parse(invalidResult.stdout);
     assert.equal(invalidReport.wasmHeaderValid, false);
+    assert.equal(invalidReport.artifactForm, 'invalid');
+    assert.equal(invalidReport.memoryExportPresent, null);
     assert.ok(invalidReport.warnings.some((warning) => warning.code === 'invalid-magic'));
+  });
+
+  await withTempDir(async (tmp) => {
+    const structural = path.join(tmp, 'structural.wasm');
+    await fsp.writeFile(structural, structuralCoreWasmBytes());
+    const result = run(process.execPath, ['skills/wasm-build/scripts/inspect-wasm-artifact.mjs', structural], { env: { ...process.env, PATH: path.join(tmp, 'missing-tools') } });
+    assert.equal(result.status, 0, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.artifactForm, 'core-module');
+    assert.deepEqual(report.imports, ['env.host:function']);
+    assert.deepEqual(report.exports, ['memory:memory:0', 'run:function:1']);
+    assert.equal(report.memoryExportPresent, true);
+
+    const component = path.join(tmp, 'component.wasm');
+    await fsp.writeFile(component, componentHeaderBytes());
+    const componentResult = run(process.execPath, ['skills/wasm-build/scripts/inspect-wasm-artifact.mjs', component], { env: { ...process.env, PATH: path.join(tmp, 'missing-tools') } });
+    assert.equal(componentResult.status, 0, componentResult.stderr);
+    const componentReport = JSON.parse(componentResult.stdout);
+    assert.equal(componentReport.artifactForm, 'component');
+    assert.equal(componentReport.memoryExportPresent, null);
   });
 
   await withTempDir(async (tmp) => {
@@ -657,8 +854,8 @@ async function validateArtifactInspection() {
     const marker = path.join(tmp, 'wasmtime-executed');
     await fsp.mkdir(bin);
     await writeFakeTool(bin, 'file', 'printf "WebAssembly module\\n"; exit 0');
-    await writeFakeTool(bin, 'wasm-tools', 'i=0; while [ "$i" -lt 70000 ]; do printf x; i=$((i + 1)); done; exit 0');
-    await writeFakeTool(bin, 'wasm-objdump', 'i=0; while [ "$i" -lt 70000 ]; do printf y >&2; i=$((i + 1)); done; exit 1');
+    await writeFakeTool(bin, 'wasm-tools', '/usr/bin/head -c 70000 /dev/zero | /usr/bin/tr "\\0" x; exit 0');
+    await writeFakeTool(bin, 'wasm-objdump', '/usr/bin/head -c 70000 /dev/zero | /usr/bin/tr "\\0" y >&2; exit 1');
     await writeFakeTool(bin, 'jco', '/bin/sleep 10; exit 0');
     await writeFakeTool(bin, 'wasmtime', 'touch "$WASM_MARKER"; exit 0');
     const result = run(process.execPath, ['skills/wasm-build/scripts/inspect-wasm-artifact.mjs', wasm], { env: { ...process.env, PATH: bin, WASM_MARKER: marker } });

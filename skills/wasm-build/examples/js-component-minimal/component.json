@@ -1,0 +1,8 @@
+{
+  "name": "js-component-minimal",
+  "component": {
+    "world": "app",
+    "wit": "wit/world.wit",
+    "artifact": "app.component.wasm"
+  }
+}

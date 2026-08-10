@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "routeId": "rust-browser",
+  "planSummary": "Rust browser Wasm route using wasm-pack with wasm-bindgen output for the browser.",
+  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build is authorized only when prerequisites are available.",
+  "prerequisiteState": "missing",
+  "commandsRun": [],
+  "buildResult": "not-run",
+  "validationResult": "not-run",
+  "artifactsProduced": [],
+  "generatedOutputPolicy": "No generated target/ or pkg/ output was produced or retained.",
+  "remainingGaps": [
+    "wasm32-unknown-unknown target is not installed in this environment; installation requires explicit environment mutation approval."
+  ]
+}

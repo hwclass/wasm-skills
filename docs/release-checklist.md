@@ -10,7 +10,16 @@ installation.
 - [ ] Root `LICENSE` exists.
 - [ ] Skill license metadata, if added later, matches repository licensing.
 - [ ] `npm run validate` passes.
+- [ ] `npm run test:install` passes.
+- [ ] `npm run test:scripts` passes.
+- [ ] `npm run test:evals` passes.
 - [ ] `git diff --check` passes.
+- [ ] At least one required hardening route has real build and artifact
+  validation evidence.
+- [ ] Missing-prerequisite evidence identifies the exact prerequisite and
+  preserves explicit approval before environment or toolchain mutation.
+- [ ] Artifact inspection reports structural facts without executing Wasm
+  artifacts.
 - [ ] Direct external-directory install passes.
 - [ ] `npx skills add hwclass/wasm-skills --skill wasm-build` succeeds from a
   fresh temporary project.

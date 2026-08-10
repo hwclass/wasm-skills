@@ -103,6 +103,22 @@
       "must": ["detect-missing-prerequisite", "no-automatic-environment-install", "request-environment-approval", "resume-after-approval"]
     },
     {
+      "id": "build-missing-tinygo",
+      "mode": "BUILD_MISSING_PREREQUISITE",
+      "language": "tinygo",
+      "environment": "wasi-preview1",
+      "query": "Build this TinyGo WASI project, but TinyGo is not installed.",
+      "must": ["detect-missing-prerequisite", "no-automatic-environment-install", "request-environment-approval", "resume-after-approval"]
+    },
+    {
+      "id": "build-missing-jco",
+      "mode": "BUILD_MISSING_PREREQUISITE",
+      "language": "javascript",
+      "environment": "component-model",
+      "query": "Build this JavaScript component, but jco componentization tooling is missing.",
+      "must": ["detect-missing-prerequisite", "no-automatic-environment-install", "request-environment-approval", "resume-after-approval"]
+    },
+    {
       "id": "repair-emscripten-browser",
       "mode": "REPAIR",
       "language": "cpp",

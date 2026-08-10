@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "routeId": "tinygo-wasi",
+  "planSummary": "TinyGo WASI route using tinygo build -target=wasi -o app.wasm .",
+  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build is authorized only when prerequisites are available.",
+  "prerequisiteState": "missing",
+  "commandsRun": [],
+  "buildResult": "not-run",
+  "validationResult": "not-run",
+  "artifactsProduced": [],
+  "generatedOutputPolicy": "No generated app.wasm, target/, or temporary output was produced or retained.",
+  "remainingGaps": [
+    "TinyGo is not installed in this environment; installation requires explicit environment mutation approval."
+  ]
+}
