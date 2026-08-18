@@ -2,12 +2,12 @@
   "schemaVersion": "1.0",
   "routeId": "js-component",
   "planSummary": "JavaScript Component Model route using jco componentize with wit/world.wit and static component validation.",
-  "authorizationBasis": "Current user explicitly requested feature implementation; project-local component build and validation were authorized because prerequisites were already present.",
+  "authorizationBasis": "Current user explicitly requested feature implementation; project-local component build and validation were authorized because prerequisites were already present. Existing Node v22.22.0 and jco 1.16.1 were selected on PATH to avoid the known incompatible default Node v14 jco path; no new JavaScript tooling was installed.",
   "prerequisiteState": "available",
   "commandsRun": [
     "PATH=/Users/temporaryadmin/.nvm/versions/node/v22.22.0/bin:$PATH jco componentize src/index.js --wit wit/world.wit --world-name app -o app.component.wasm",
-    "wasm-tools validate app.component.wasm",
     "PATH=/Users/temporaryadmin/.nvm/versions/node/v22.22.0/bin:$PATH jco wit app.component.wasm",
+    "wasm-tools validate app.component.wasm",
     "node ../../scripts/inspect-wasm-artifact.mjs app.component.wasm"
   ],
   "buildResult": "passed",
@@ -17,6 +17,6 @@
   ],
   "generatedOutputPolicy": "Generated app.component.wasm was removed after evidence capture; source fixture remains committed.",
   "remainingGaps": [
-    "Default PATH jco uses Node v14.17.6 and fails; evidence used an already-installed Node v22.22.0 runtime without installing tools."
+    "Default PATH jco uses Node v14.17.6 and fails; route evidence used an already-installed Node v22.22.0 runtime without installing tools."
   ]
 }

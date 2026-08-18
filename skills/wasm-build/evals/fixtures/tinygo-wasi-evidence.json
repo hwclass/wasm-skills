@@ -2,14 +2,26 @@
   "schemaVersion": "1.0",
   "routeId": "tinygo-wasi",
   "planSummary": "TinyGo WASI route using tinygo build -target=wasi -o app.wasm .",
-  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build is authorized only when prerequisites are available.",
-  "prerequisiteState": "missing",
-  "commandsRun": [],
-  "buildResult": "not-run",
-  "validationResult": "not-run",
-  "artifactsProduced": [],
-  "generatedOutputPolicy": "No generated app.wasm, target/, or temporary output was produced or retained.",
-  "remainingGaps": [
-    "TinyGo is not installed in this environment; installation requires explicit environment mutation approval."
-  ]
+  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build and validation were authorized after inspection. TinyGo was missing, so exact approval was requested before each environment/toolchain action: brew tap tinygo-org/tools, official TinyGo v0.41.1 macOS Intel tarball download/extract under /tmp after Homebrew trust policy blocked brew install, and TinyGo build cache use during the approved build.",
+  "prerequisiteState": "approved-installed",
+  "commandsRun": [
+    "which tinygo",
+    "tinygo version",
+    "brew tap tinygo-org/tools",
+    "brew install tinygo",
+    "curl -L -o /tmp/tinygo0.41.1.darwin-amd64.tar.gz https://github.com/tinygo-org/tinygo/releases/download/v0.41.1/tinygo0.41.1.darwin-amd64.tar.gz",
+    "tar -xzf /tmp/tinygo0.41.1.darwin-amd64.tar.gz -C /tmp/wasm-route-proof-tinygo",
+    "PATH=/tmp/wasm-route-proof-tinygo/tinygo/bin:$PATH tinygo version",
+    "PATH=/tmp/wasm-route-proof-tinygo/tinygo/bin:$PATH make build",
+    "PATH=/tmp/wasm-route-proof-tinygo/tinygo/bin:$PATH tinygo build -target=wasi -o app.wasm .",
+    "wasm-tools validate app.wasm",
+    "node ../../scripts/inspect-wasm-artifact.mjs app.wasm"
+  ],
+  "buildResult": "passed",
+  "validationResult": "passed",
+  "artifactsProduced": [
+    "skills/wasm-build/examples/tinygo-minimal/app.wasm"
+  ],
+  "generatedOutputPolicy": "Generated app.wasm output under skills/wasm-build/examples/tinygo-minimal/ was removed with make clean after evidence capture.",
+  "remainingGaps": []
 }
