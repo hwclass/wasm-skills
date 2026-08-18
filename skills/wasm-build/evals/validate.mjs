@@ -489,8 +489,13 @@ function validateIntegrationEvidence() {
       assert.ok(record.artifactsProduced.length > 0, `${file} passed build requires artifactsProduced`);
     }
   }
-  assert.ok(records.some(({ record }) => record.buildResult === 'passed' && record.validationResult === 'passed'), 'at least one route must have real build and validation evidence');
-  assert.ok(records.some(({ record }) => record.prerequisiteState === 'missing' && record.buildResult === 'not-run'), 'missing prerequisites must not be route success');
+  for (const requiredRoute of ['rust-browser', 'tinygo-wasi', 'js-component']) {
+    const match = records.find(({ record }) => record.routeId === requiredRoute);
+    assert.ok(match, `${requiredRoute} route evidence is missing`);
+    assert.equal(match.record.buildResult, 'passed', `${requiredRoute} route build evidence must pass for freeze readiness`);
+    assert.equal(match.record.validationResult, 'passed', `${requiredRoute} route validation evidence must pass for freeze readiness`);
+  }
+  assert.ok(records.every(({ record }) => !['missing', 'blocked'].includes(record.prerequisiteState) || record.buildResult !== 'passed'), 'missing or blocked prerequisites must not be route success');
 
   const prereq = readJson('skills/wasm-build/evals/fixtures/missing-prerequisite-approval.json');
   assert.equal(prereq.schemaVersion, '1.0');
@@ -513,8 +518,18 @@ function validateGeneratedOutputAbsence() {
       assert.ok(!fs.existsSync(path.join(routeRoot, generated)), `${route} must not retain generated ${generated}/`);
     }
   }
-  assert.ok(!fs.existsSync(path.join(root, 'skills/wasm-build/examples/tinygo-minimal/app.wasm')), 'tinygo app.wasm must not be committed');
-  assert.ok(!fs.existsSync(path.join(root, 'skills/wasm-build/examples/js-component-minimal/app.component.wasm')), 'js component artifact must not be committed');
+  for (const rel of [
+    'skills/wasm-build/examples/rust-browser/before/target',
+    'skills/wasm-build/examples/rust-browser/before/pkg',
+    'skills/wasm-build/examples/tinygo-minimal/app.wasm',
+    'skills/wasm-build/examples/tinygo-minimal/tmp',
+    'skills/wasm-build/examples/js-component-minimal/app.component.wasm',
+    'skills/wasm-build/examples/js-component-minimal/dist',
+    'skills/wasm-build/examples/js-component-minimal/node_modules',
+    'skills/wasm-build/examples/js-component-minimal/tmp'
+  ]) {
+    assert.ok(!fs.existsSync(path.join(root, rel)), `generated route output must be absent: ${rel}`);
+  }
 }
 
 function validateFailureDiagnosisContent() {

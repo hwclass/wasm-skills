@@ -2,14 +2,22 @@
   "schemaVersion": "1.0",
   "routeId": "rust-browser",
   "planSummary": "Rust browser Wasm route using wasm-pack with wasm-bindgen output for the browser.",
-  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build is authorized only when prerequisites are available.",
-  "prerequisiteState": "missing",
-  "commandsRun": [],
-  "buildResult": "not-run",
-  "validationResult": "not-run",
-  "artifactsProduced": [],
-  "generatedOutputPolicy": "No generated target/ or pkg/ output was produced or retained.",
-  "remainingGaps": [
-    "wasm32-unknown-unknown target is not installed in this environment; installation requires explicit environment mutation approval."
-  ]
+  "authorizationBasis": "Current user explicitly requested feature implementation; project-local build and validation were authorized after inspection. Explicit approval was requested and granted for rustup target add wasm32-unknown-unknown and for cargo install wasm-bindgen-cli --version 0.2.127 after wasm-pack exposed that exact missing CLI prerequisite.",
+  "prerequisiteState": "approved-installed",
+  "commandsRun": [
+    "rustup target list --installed",
+    "rustup target add wasm32-unknown-unknown",
+    "wasm-pack build --target web",
+    "cargo install wasm-bindgen-cli --version 0.2.127",
+    "wasm-pack build --target web",
+    "wasm-tools validate pkg/rust_browser_bg.wasm",
+    "node ../../../scripts/inspect-wasm-artifact.mjs pkg/rust_browser_bg.wasm"
+  ],
+  "buildResult": "passed",
+  "validationResult": "passed",
+  "artifactsProduced": [
+    "skills/wasm-build/examples/rust-browser/before/pkg/rust_browser_bg.wasm"
+  ],
+  "generatedOutputPolicy": "Generated target/ and pkg/ output under skills/wasm-build/examples/rust-browser/before/ was removed after evidence capture.",
+  "remainingGaps": []
 }
